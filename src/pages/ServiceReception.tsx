@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ServiceReceptionList from '@/components/service-reception/ServiceReceptionList';
 import ServiceReceptionForm from '@/components/service-reception/ServiceReceptionForm';
 import { ServiceReception } from '@/types/service-reception';
+import ErpLayout from '../components/layout/ErpLayout.tsx';
 
 const ServiceReceptionPage = () => {
   const [view, setView] = useState<'list' | 'form'>('list');
@@ -18,13 +19,15 @@ const ServiceReceptionPage = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4">
-      {view === 'list' ? (
-        <ServiceReceptionList onAddNew={() => handleShowForm()} onEdit={handleShowForm} />
-      ) : (
-        <ServiceReceptionForm reception={selectedReception} onBack={handleShowList} onSaveSuccess={handleShowList} />
-      )}
-    </div>
+    <ErpLayout>
+      <div className="erp-container bg-transparent p-0">
+        {view === 'list' ? (
+          <ServiceReceptionList onAddNew={() => handleShowForm()} onEdit={handleShowForm} />
+        ) : (
+          <ServiceReceptionForm reception={selectedReception} onBack={handleShowList} onSaveSuccess={handleShowList} />
+        )}
+      </div>
+    </ErpLayout>
   );
 };
 
