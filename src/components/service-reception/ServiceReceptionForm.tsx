@@ -10,15 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Printer, Trash2, Search } from 'lucide-react';
 import { saveServiceReception } from '@/lib/mockApi';
 import { showSuccess, showError } from '@/utils/toast';
+import ServiceDetailsTable from './ServiceDetailsTable';
 
 interface ServiceReceptionFormProps {
   reception: ServiceReception | null;
   onBack: () => void;
   onSaveSuccess: () => void;
 }
+
+const serviceDetailSchema = z.object({
+  itemCode: z.string().optional(),
+  description: z.string().optional(),
+  unit: z.string().optional(),
+  qty: z.coerce.number().optional(),
+  rate: z.coerce.number().optional(),
+});
 
 const formSchema = z.object({
   vehicleNo: z.string().min(1, "Vehicle No is required"),
@@ -30,6 +39,10 @@ const formSchema = z.object({
   status: z.enum(["Pending", "Approved"]),
   broughtBy: z.enum(["Owner", "Driver", "Friend"]),
   carWash: z.boolean().default(false),
+  serviceDetails: z.array(serviceDetailSchema).optional(),
+  customerComplaint: z.string().optional(),
+  scopeOfWork: z.string().optional(),
+  receptionRemarks: z.string().optional(),
 });
 
 const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceReceptionFormProps) => {
@@ -45,6 +58,10 @@ const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceRecep
       status: reception?.status === 'Approved' ? 'Approved' : 'Pending',
       broughtBy: reception?.broughtBy || 'Owner',
       carWash: reception?.carWash || false,
+      serviceDetails: reception?.serviceDetails || [],
+      customerComplaint: reception?.customerComplaint || '',
+      scopeOfWork: reception?.scopeOfWork || '',
+      receptionRemarks: reception?.receptionRemarks || '',
     },
   });
 
@@ -66,31 +83,41 @@ const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceRecep
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <CardTitle>{reception ? 'Edit' : 'New'} Service Reception</CardTitle>
-          </div>
-          <Button onClick={form.handleSubmit(onSubmit)}>
-            <Save className="mr-2 h-4 w-4" /> Save
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="customer">
-          <TabsList>
-            <TabsTrigger value="customer">Customer Registration</TabsTrigger>
-            <TabsTrigger value="job-type" disabled>Job Type</TabsTrigger>
-            <TabsTrigger value="checklist" disabled>Vehicle Check List</TabsTrigger>
-            <TabsTrigger value="images" disabled>Check List Images</TabsTrigger>
-          </TabsList>
-          <TabsContent value="customer" className="mt-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" onClick={onBack} type="button">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle>{reception ? 'Edit' : 'New'} Service Reception</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                 <Button variant="outline" type="button">
+                    <Printer className="mr-2 h-4 w-4" /> Print
+                </Button>
+                {reception && (
+                    <Button variant="outline" type="button" className="text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                )}
+                <Button type="submit">
+                  <Save className="mr-2 h-4 w-4" /> Save
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="customer">
+              <TabsList>
+                <TabsTrigger value="customer">Customer Registration</TabsTrigger>
+                <TabsTrigger value="job-type">Job Type</TabsTrigger>
+                <TabsTrigger value="checklist" disabled>Vehicle Check List</TabsTrigger>
+                <TabsTrigger value="images" disabled>Check List Images</TabsTrigger>
+              </TabsList>
+              <TabsContent value="customer" className="mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                       <FormLabel>Service Order No</FormLabel>
@@ -106,7 +133,14 @@ const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceRecep
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Vehicle No</FormLabel>
-                        <FormControl><Input placeholder="Enter Vehicle No" {...field} /></FormControl>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="Enter Vehicle No" {...field} className="pr-10" />
+                            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7">
+                              <Search className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -117,7 +151,14 @@ const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceRecep
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Customer Name</FormLabel>
-                        <FormControl><Input placeholder="Enter Customer Name" {...field} /></FormControl>
+                         <FormControl>
+                          <div className="relative">
+                            <Input placeholder="Enter Customer Name" {...field} className="pr-10" />
+                            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7">
+                              <Search className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -212,12 +253,50 @@ const ServiceReceptionForm = ({ reception, onBack, onSaveSuccess }: ServiceRecep
                     )}
                   />
                 </div>
-              </form>
-            </Form>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+              </TabsContent>
+              <TabsContent value="job-type" className="mt-4 space-y-6">
+                <ServiceDetailsTable />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="customerComplaint"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Customer Complaint</FormLabel>
+                                <FormControl><Textarea placeholder="Describe the customer's complaint..." {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="scopeOfWork"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Scope of Work</FormLabel>
+                                <FormControl><Textarea placeholder="Outline the scope of work..." {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="receptionRemarks"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Reception Remarks</FormLabel>
+                                <FormControl><Textarea placeholder="Add any reception remarks..." {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </form>
+    </Form>
   );
 };
 

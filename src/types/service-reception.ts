@@ -14,19 +14,19 @@ export interface ServiceReception {
   carWash?: boolean;
   serviceDetails?: ServiceDetail[];
   remarks?: ReceptionRemark[];
+  customerComplaint?: string;
+  scopeOfWork?: string;
+  receptionRemarks?: string;
 }
 
 export interface ServiceDetail {
-  id: string;
+  id?: string;
   itemCode: string;
   description: string;
   unit: string;
   qty: number;
   rate: number;
   amount: number;
-  customerComplaint?: string;
-  scopeOfWork?: string;
-  remarks?: string;
 }
 
 export interface ReceptionRemark {

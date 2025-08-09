@@ -11,6 +11,13 @@ const mockReceptions: ServiceReception[] = [
     totalAmount: 350.00,
     broughtBy: 'Owner',
     carWash: true,
+    serviceDetails: [
+        { id: 'sd1', itemCode: 'SRV-01', description: 'Oil Change', unit: 'pcs', qty: 1, rate: 150, amount: 150 },
+        { id: 'sd2', itemCode: 'SRV-02', description: 'Tire Rotation', unit: 'pcs', qty: 4, rate: 50, amount: 200 },
+    ],
+    customerComplaint: 'Engine making a weird noise.',
+    scopeOfWork: 'Diagnose engine noise, perform oil change and tire rotation.',
+    receptionRemarks: 'Customer waiting.',
   },
   {
     id: '2',
@@ -53,16 +60,19 @@ export const saveServiceReception = async (reception: Omit<ServiceReception, 'id
     // Update existing
     const index = mockReceptions.findIndex(r => r.id === reception.id);
     if (index !== -1) {
-      mockReceptions[index] = { ...mockReceptions[index], ...reception };
+      const totalAmount = reception.serviceDetails?.reduce((sum, item) => sum + (item.qty * item.rate), 0) || mockReceptions[index].totalAmount;
+      mockReceptions[index] = { ...mockReceptions[index], ...reception, totalAmount };
       return mockReceptions[index];
     }
   }
   // Create new
+  const totalAmount = reception.serviceDetails?.reduce((sum, item) => sum + (item.qty * item.rate), 0) || 0;
   const newReception: ServiceReception = {
     ...reception,
     id: (mockReceptions.length + 1).toString(),
     soNumber: `SO-00${mockReceptions.length + 1}`,
     status: reception.status,
+    totalAmount,
   };
   mockReceptions.push(newReception);
   return newReception;
