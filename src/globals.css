@@ -522,7 +522,7 @@ button.action-btn:hover { color: #084a8a; }
   position: sticky;
   top: 0;
   background-color: var(--bg-white);
-  z-index: 950;
+  z-index: 41; /* Lower than shadcn's default modal z-index of 50, but above tabs */
   margin: -15px -15px 15px -15px;
   padding: 10px 15px;
   border-bottom: 1px solid var(--border-color);
@@ -551,7 +551,7 @@ button.action-btn:hover { color: #084a8a; }
   position: sticky;
   top: 61px; /* Height of form-header */
   background-color: var(--bg-white);
-  z-index: 949; /* Below the form-header */
+  z-index: 40; /* Lower than shadcn's default modal z-index of 50 */
   margin: 0;
   padding: 0;
   border: none;
