@@ -76,9 +76,33 @@ const ServiceReceptionFormPage = () => {
       const fetchReception = async () => {
         const data = await getServiceReceptionByDocCode(docCode);
         if (data) {
-          const { docCode: _dc, totalAmount: _ta, serviceDetails: _sd, receptionRemarks: _rr, jobTypes: loadedJobTypes, vehicleChecklist: loadedChecklist, ...formDataToSet } = data;
+          const { 
+            docCode: _dc, 
+            totalAmount: _ta, 
+            serviceDetails: loadedServiceDetails, 
+            receptionRemarks: loadedReceptionRemarks, 
+            jobTypes: loadedJobTypes, 
+            vehicleChecklist: loadedChecklist, 
+            ...formDataToSet 
+          } = data;
+          
           setFormData(formDataToSet);
-          if (loadedJobTypes) setSelectedJobTypes(loadedJobTypes);
+          
+          if (loadedServiceDetails) {
+            setServiceDetails(loadedServiceDetails);
+            const maxId = loadedServiceDetails.reduce((max, d) => Math.max(max, d.id), 0);
+            setNextDetailId(maxId + 1);
+          }
+          
+          if (loadedReceptionRemarks) {
+            setReceptionRemarks(loadedReceptionRemarks);
+            const maxId = loadedReceptionRemarks.reduce((max, r) => Math.max(max, r.id), 0);
+            setNextRemarkId(maxId + 1);
+          }
+
+          if (loadedJobTypes) {
+            setSelectedJobTypes(loadedJobTypes);
+          }
           
           if (loadedChecklist && loadedChecklist.length > 0) {
             const fullChecklist: VehicleChecklistItem[] = checklistMaster.map(masterItem => {

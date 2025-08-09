@@ -1,4 +1,4 @@
-import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem } from './types';
+import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem, ServiceDetail, ServiceReceptionRemark } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { docCode: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },
@@ -51,5 +51,19 @@ export let vehicleChecklists: { [docCode: string]: VehicleChecklistItem[] } = {
   ],
   'SR-002': [
      { id: 9, name: 'AC Cooling Performance', status: 'Not OK', remarks: 'Not cooling at all' },
+  ]
+};
+
+export let serviceDetails: { [docCode: string]: ServiceDetail[] } = {
+  'SR-001': [
+    { id: 1, itemcode: 'OIL-SYN', description: 'Synthetic Oil Change', unit: 'Job', qty: 1, rate: 150, amount: 150, customer_complaint: 'Regular service', scope_of_work: 'Change oil and filter', remarks: '' },
+    { id: 2, itemcode: 'BRK-PAD', description: 'Brake Pad Inspection', unit: 'Job', qty: 1, rate: 50, amount: 50, customer_complaint: 'Squeaking noise', scope_of_work: 'Inspect front and rear pads', remarks: 'Front pads at 50%' },
+  ]
+};
+
+export let receptionRemarks: { [docCode: string]: ServiceReceptionRemark[] } = {
+  'SR-001': [
+    { id: 1, slNo: 1, remarks: 'Customer is waiting for the vehicle.' },
+    { id: 2, slNo: 2, remarks: 'Please check for any software updates.' },
   ]
 };

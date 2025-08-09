@@ -1,4 +1,4 @@
-import { serviceReceptions, jobTypes, customerJobTypes, vehicleChecklists } from './mockData';
+import { serviceReceptions, jobTypes, customerJobTypes, vehicleChecklists, serviceDetails, receptionRemarks } from './mockData';
 import { ServiceReception, JobType } from './types';
 
 const SIMULATED_DELAY = 500;
@@ -31,7 +31,9 @@ export const getServiceReceptionByDocCode = (docCode: string): Promise<ServiceRe
       if (reception) {
         const jobs = customerJobTypes[docCode] || [];
         const checklist = vehicleChecklists[docCode] || [];
-        resolve({ ...reception, jobTypes: jobs, vehicleChecklist: checklist });
+        const details = serviceDetails[docCode] || [];
+        const remarks = receptionRemarks[docCode] || [];
+        resolve({ ...reception, jobTypes: jobs, vehicleChecklist: checklist, serviceDetails: details, receptionRemarks: remarks });
       } else {
         resolve(undefined);
       }
@@ -71,6 +73,12 @@ export const updateServiceReception = (docCode: string, data: Partial<ServiceRec
         if (data.vehicleChecklist) {
           vehicleChecklists[docCode] = data.vehicleChecklist;
         }
+        if (data.serviceDetails) {
+            serviceDetails[docCode] = data.serviceDetails;
+        }
+        if (data.receptionRemarks) {
+            receptionRemarks[docCode] = data.receptionRemarks;
+        }
         resolve(serviceReceptions[index]);
       } else {
         resolve(null);
@@ -87,6 +95,8 @@ export const deleteServiceReception = (docCode: string): Promise<boolean> => {
         serviceReceptions.splice(index, 1);
         delete customerJobTypes[docCode];
         delete vehicleChecklists[docCode];
+        delete serviceDetails[docCode];
+        delete receptionRemarks[docCode];
         resolve(true);
       } else {
         resolve(false);
