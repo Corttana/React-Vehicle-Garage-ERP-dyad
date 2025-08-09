@@ -17,6 +17,7 @@ import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast
 import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes } from '@/lib/api';
 import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItem } from '@/lib/types';
 import { checklistMaster } from '@/lib/mockData';
+import JobTypeSelection from '@/components/service-reception/JobTypeSelection';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
@@ -301,7 +302,12 @@ const ServiceReceptionFormPage = () => {
           
           <TabsContent value="job-type">
             <div className="erp-section-header">Select Job Types</div>
-            <div className="space-y-4">{allJobTypes.map(jobType => { const isSelected = selectedJobTypes.some(sjt => sjt.jobId === jobType.jobId); const currentRemarks = selectedJobTypes.find(sjt => sjt.jobId === jobType.jobId)?.remarks || ''; return (<div key={jobType.jobId} className="flex items-start gap-4 p-3 border rounded-md bg-secondary/50"><div className="flex items-center h-9"><Checkbox id={`job-type-${jobType.jobId}`} checked={isSelected} onCheckedChange={(checked) => handleJobTypeCheckChange(jobType.jobId, checked === true)} /></div><div className="flex-grow grid gap-1.5"><Label htmlFor={`job-type-${jobType.jobId}`} className="font-semibold cursor-pointer">{jobType.jobTypeName}</Label><Input id={`job-type-remarks-${jobType.jobId}`} placeholder="Add remarks for this job type..." className="erp-form-input" disabled={!isSelected} value={currentRemarks} onChange={(e) => handleJobTypeRemarkChange(jobType.jobId, e.target.value)} /></div></div>);})}</div>
+            <JobTypeSelection
+              allJobTypes={allJobTypes}
+              selectedJobTypes={selectedJobTypes}
+              onJobTypeCheckChange={handleJobTypeCheckChange}
+              onJobTypeRemarkChange={handleJobTypeRemarkChange}
+            />
           </TabsContent>
 
           <TabsContent value="vehicle-checklist">
