@@ -90,7 +90,7 @@ const ServiceReceptionListPage = () => {
           <Table className="erp-table">
             <TableHeader>
               <TableRow>
-                <TableHead>Service Order No</TableHead>
+                <TableHead>DOC_CODE</TableHead>
                 <TableHead>Order Date</TableHead>
                 <TableHead>Vehicle No</TableHead>
                 <TableHead>Customer Name</TableHead>
