@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Car, Wrench, CheckCircle, Clock } from 'lucide-react';
-import { getServiceReceptions, ServiceReception } from '@/lib/api';
+import { getServiceReceptions } from '@/lib/api';
+import { ServiceReception } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const DashboardPage = () => {

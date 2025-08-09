@@ -1,21 +1,4 @@
-export interface ServiceReception {
-  id: string;
-  docDate: string;
-  vehicleNo: string;
-  customerName: string;
-  status: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
-  mobileNo: string;
-  address: string;
-  building: string;
-  zone: string;
-  street: string;
-  vehicleAccount: string;
-  vino: string;
-  odometerReading: string;
-  broughtBy: 'Owner' | 'Driver' | 'Friend';
-  carWash: 'Y' | 'N';
-  totalAmount: number;
-}
+import { ServiceReception } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { id: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },

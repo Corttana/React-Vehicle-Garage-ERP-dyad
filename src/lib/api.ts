@@ -1,4 +1,5 @@
-import { serviceReceptions, ServiceReception } from './mockData';
+import { serviceReceptions } from './mockData';
+import { ServiceReception } from './types';
 
 const SIMULATED_DELAY = 500;
 
@@ -30,7 +31,7 @@ export const createServiceReception = (data: Omit<ServiceReception, 'id' | 'tota
       const newReception: ServiceReception = {
         ...data,
         id: getNextId(),
-        totalAmount: 0, // Default total amount for new entries
+        totalAmount: 0, // This will be calculated from details later
       };
       serviceReceptions.unshift(newReception);
       resolve(newReception);
