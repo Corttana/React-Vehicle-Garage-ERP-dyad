@@ -18,11 +18,11 @@ interface CustomerAccountModalProps {
 const CustomerAccountModal = ({ isOpen, onClose }: CustomerAccountModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-content" style={{ maxWidth: '700px' }}>
-        <DialogHeader className="modal-header">
-          <DialogTitle className="modal-title">Customer Account Registration</DialogTitle>
+      <DialogContent className="sm:max-w-[700px]">
+        <DialogHeader>
+          <DialogTitle>Customer Account Registration</DialogTitle>
         </DialogHeader>
-        <div className="modal-body">
+        <div className="py-4">
           <form id="customerAccountForm" className="erp-grid">
             <div className="erp-form-group">
               <Label htmlFor="txtModalAccountName" className="erp-form-label">
@@ -40,9 +40,9 @@ const CustomerAccountModal = ({ isOpen, onClose }: CustomerAccountModalProps) =>
             </div>
           </form>
         </div>
-        <DialogFooter className="modal-footer">
+        <DialogFooter>
           <Button type="button" id="btn-save-customer" className="btn btn-success">Submit</Button>
-          <Button type="button" className="btn btn-warning btn-close-modal" onClick={onClose}>Cancel</Button>
+          <Button type="button" className="btn btn-warning" onClick={onClose}>Cancel</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
