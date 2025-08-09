@@ -1,5 +1,5 @@
-import React, { useState, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, FormEvent, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,7 @@ interface ServiceReceptionData {
 }
 
 const ServiceReceptionFormPage = () => {
+  const navigate = useNavigate();
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
 
@@ -59,6 +60,29 @@ const ServiceReceptionFormPage = () => {
     CAR_WASH: 'N',
     VEHICLE_NO: '',
   });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Save on Ctrl+S
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        const saveButton = document.getElementById('btn-save-form');
+        saveButton?.click();
+      }
+      // Cancel/Go Back on Escape
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        navigate('/service-reception');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigate]);
 
   // Generic handler for input and textarea changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -96,22 +120,14 @@ const ServiceReceptionFormPage = () => {
     e.preventDefault();
     const toastId = showLoading('Saving service reception data...');
     
-    // The DOC_DATE and ORDER_DATE are the same in the form, so ensure they are consistent.
-    const payload = {
-        ...formData,
-        ORDER_DATE: formData.DOC_DATE
-    };
+    const payload = { ...formData, ORDER_DATE: formData.DOC_DATE };
 
     console.log('Submitting the following data to /api/service-reception:', JSON.stringify(payload, null, 2));
 
     try {
-      // This is where the frontend calls your Node.js backend.
-      // This will currently fail with a 404 error, which is expected.
       const response = await fetch('/api/service-reception', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -124,7 +140,6 @@ const ServiceReceptionFormPage = () => {
       }
       
       showSuccess('Service reception saved successfully!');
-      // You could reset the form or redirect the user here
     } catch (error) {
       dismissToast(toastId);
       console.error('Error submitting form:', error);
@@ -155,13 +170,13 @@ const ServiceReceptionFormPage = () => {
             <h2 id="form-title">New Service Reception</h2>
           </div>
           <div className="form-header-actions">
-            <Button type="submit" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)">
+            <Button type="submit" id="btn-save-form" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)">
               <Check className="h-4 w-4" /> Save
             </Button>
             <Button type="button" id="btn-delete-form" className="btn btn-danger">
               <Trash2 className="h-4 w-4" /> Delete
             </Button>
-            <Button type="button" id="btn-cancel-form" className="btn btn-warning" title="Cancel and return to list (Esc)">
+            <Button type="button" id="btn-cancel-form" className="btn btn-warning" title="Cancel and return to list (Esc)" onClick={() => navigate('/service-reception')}>
               <X className="h-4 w-4" /> Cancel
             </Button>
           </div>
