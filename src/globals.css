@@ -561,21 +561,21 @@ button.action-btn:hover { color: #084a8a; }
 }
 
 /* --- Modal Layout Fix --- */
-.modal .erp-grid {
+[role="dialog"] .erp-grid {
   grid-template-columns: 1fr; /* Force single column layout */
   gap: 15px; /* Add a bit more vertical space */
 }
-.modal .erp-form-group {
+[role="dialog"] .erp-form-group {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
 }
-.modal .erp-form-label {
+[role="dialog"] .erp-form-label {
   width: auto;
   text-align: left;
 }
-.modal .erp-form-input,
-.modal .erp-form-group textarea {
+[role="dialog"] .erp-form-input,
+[role="dialog"] .erp-form-group textarea {
   width: 100%;
 }
 
