@@ -15,14 +15,14 @@ export interface ServiceReception {
   broughtBy: 'Owner' | 'Driver' | 'Friend';
   carWash: 'Y' | 'N';
   totalAmount: number;
-  // Optional properties for related data, makes payload handling easier
   serviceDetails?: ServiceDetail[];
   receptionRemarks?: ServiceReceptionRemark[];
   jobTypes?: CustomerJobType[];
+  vehicleChecklist?: VehicleChecklistItem[];
 }
 
 export interface ServiceDetail {
-  id: number; // Temporary client-side ID
+  id: number;
   itemcode: string;
   description: string;
   unit: string;
@@ -35,7 +35,7 @@ export interface ServiceDetail {
 }
 
 export interface ServiceReceptionRemark {
-  id: number; // Temporary client-side ID for list management
+  id: number;
   slNo: number;
   remarks: string;
 }
@@ -48,5 +48,12 @@ export interface JobType {
 
 export interface CustomerJobType {
   jobId: number;
+  remarks: string;
+}
+
+export interface VehicleChecklistItem {
+  id: number;
+  name: string;
+  status: 'OK' | 'Not OK' | 'N/A';
   remarks: string;
 }

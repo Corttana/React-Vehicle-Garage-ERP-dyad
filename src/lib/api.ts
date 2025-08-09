@@ -1,9 +1,8 @@
-import { serviceReceptions, jobTypes, customerJobTypes } from './mockData';
+import { serviceReceptions, jobTypes, customerJobTypes, vehicleChecklists } from './mockData';
 import { ServiceReception, JobType } from './types';
 
 const SIMULATED_DELAY = 500;
 
-// Helper to generate a new docCode
 const getNextDocCode = () => {
   const lastId = serviceReceptions.map(r => parseInt(r.docCode.split('-')[1])).sort((a, b) => b - a)[0] || 0;
   return `SR-${String(lastId + 1).padStart(3, '0')}`;
@@ -30,9 +29,9 @@ export const getServiceReceptionByDocCode = (docCode: string): Promise<ServiceRe
     setTimeout(() => {
       const reception = serviceReceptions.find(r => r.docCode === docCode);
       if (reception) {
-        // In a real app, this would be a JOIN. Here we simulate it.
         const jobs = customerJobTypes[docCode] || [];
-        resolve({ ...reception, jobTypes: jobs });
+        const checklist = vehicleChecklists[docCode] || [];
+        resolve({ ...reception, jobTypes: jobs, vehicleChecklist: checklist });
       } else {
         resolve(undefined);
       }
@@ -46,12 +45,14 @@ export const createServiceReception = (data: Omit<ServiceReception, 'docCode' | 
       const newReception: ServiceReception = {
         ...data,
         docCode: getNextDocCode(),
-        totalAmount: 0, // This will be calculated from details later
+        totalAmount: 0,
       };
       serviceReceptions.unshift(newReception);
-      // Save related job types
       if (data.jobTypes) {
         customerJobTypes[newReception.docCode] = data.jobTypes;
+      }
+      if (data.vehicleChecklist) {
+        vehicleChecklists[newReception.docCode] = data.vehicleChecklist;
       }
       resolve(newReception);
     }, SIMULATED_DELAY);
@@ -64,9 +65,11 @@ export const updateServiceReception = (docCode: string, data: Partial<ServiceRec
       const index = serviceReceptions.findIndex(r => r.docCode === docCode);
       if (index !== -1) {
         serviceReceptions[index] = { ...serviceReceptions[index], ...data };
-        // Update related job types
         if (data.jobTypes) {
           customerJobTypes[docCode] = data.jobTypes;
+        }
+        if (data.vehicleChecklist) {
+          vehicleChecklists[docCode] = data.vehicleChecklist;
         }
         resolve(serviceReceptions[index]);
       } else {
@@ -82,7 +85,8 @@ export const deleteServiceReception = (docCode: string): Promise<boolean> => {
       const index = serviceReceptions.findIndex(r => r.docCode === docCode);
       if (index !== -1) {
         serviceReceptions.splice(index, 1);
-        delete customerJobTypes[docCode]; // Also delete related job types
+        delete customerJobTypes[docCode];
+        delete vehicleChecklists[docCode];
         resolve(true);
       } else {
         resolve(false);

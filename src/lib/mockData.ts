@@ -1,4 +1,4 @@
-import { ServiceReception, JobType, CustomerJobType } from './types';
+import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { docCode: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },
@@ -18,7 +18,6 @@ export let jobTypes: JobType[] = [
   { jobId: 7, jobTypeName: 'Tire Replacement', active: 'N' }, // Inactive example
 ];
 
-// This would be your WO_CUST_JOBTYPE table in a real DB
 export let customerJobTypes: { [docCode: string]: CustomerJobType[] } = {
   'SR-001': [
     { jobId: 1, remarks: 'Full synthetic oil requested.' },
@@ -27,4 +26,30 @@ export let customerJobTypes: { [docCode: string]: CustomerJobType[] } = {
   'SR-002': [
     { jobId: 4, remarks: 'AC not cooling effectively.' },
   ],
+};
+
+export const checklistMaster: { id: number; name: string }[] = [
+  { id: 1, name: 'Headlights & Taillights' },
+  { id: 2, name: 'Turn Signals & Hazards' },
+  { id: 3, name: 'Wipers & Washer Fluid' },
+  { id: 4, name: 'Tire Condition & Pressure' },
+  { id: 5, name: 'Engine Oil Level' },
+  { id: 6, name: 'Brake Fluid Level' },
+  { id: 7, name: 'Coolant Level' },
+  { id: 8, name: 'Horn' },
+  { id: 9, name: 'AC Cooling Performance' },
+  { id: 10, name: 'Interior Lights & Controls' },
+  { id: 11, name: 'Any visible scratches/dents' },
+  { id: 12, name: 'Spare Tire & Tools' },
+];
+
+export let vehicleChecklists: { [docCode: string]: VehicleChecklistItem[] } = {
+  'SR-001': [
+    { id: 1, name: 'Headlights & Taillights', status: 'OK', remarks: '' },
+    { id: 4, name: 'Tire Condition & Pressure', status: 'Not OK', remarks: 'Front left tire is low' },
+    { id: 11, name: 'Any visible scratches/dents', status: 'OK', remarks: 'Minor scratch on rear bumper' },
+  ],
+  'SR-002': [
+     { id: 9, name: 'AC Cooling Performance', status: 'Not OK', remarks: 'Not cooling at all' },
+  ]
 };

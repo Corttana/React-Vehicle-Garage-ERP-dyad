@@ -9,25 +9,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Upload, Ban } from 'lucide-react';
+import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Ban } from 'lucide-react';
 import VehicleRegistrationModal from '@/components/service-reception/VehicleRegistrationModal';
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
+import VehicleChecklist from '@/components/service-reception/VehicleChecklist';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
 import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes } from '@/lib/api';
-import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType } from '@/lib/types';
+import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItem } from '@/lib/types';
+import { checklistMaster } from '@/lib/mockData';
 
-type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes'>;
+type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
 
 const initialDetailState: DetailFormData = {
-  itemcode: '',
-  description: '',
-  unit: '',
-  qty: 1,
-  rate: 0,
-  customer_complaint: '',
-  scope_of_work: '',
-  remarks: '',
+  itemcode: '', description: '', unit: '', qty: 1, rate: 0,
+  customer_complaint: '', scope_of_work: '', remarks: '',
 };
 
 const ServiceReceptionFormPage = () => {
@@ -56,6 +52,8 @@ const ServiceReceptionFormPage = () => {
 
   const [allJobTypes, setAllJobTypes] = useState<JobType[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<CustomerJobType[]>([]);
+  
+  const [vehicleChecklist, setVehicleChecklist] = useState<VehicleChecklistItem[]>([]);
 
   useEffect(() => {
     const fetchJobTypes = async () => {
@@ -63,26 +61,42 @@ const ServiceReceptionFormPage = () => {
       setAllJobTypes(data);
     };
     fetchJobTypes();
-  }, []);
 
-  useEffect(() => {
+    const initializeChecklist = () => {
+      setVehicleChecklist(checklistMaster.map(item => ({
+        id: item.id,
+        name: item.name,
+        status: 'N/A',
+        remarks: ''
+      })));
+    };
+
     if (docCode) {
       setIsEditMode(true);
       const fetchReception = async () => {
         const data = await getServiceReceptionByDocCode(docCode);
         if (data) {
-          const { docCode: _dc, totalAmount: _ta, serviceDetails: _sd, receptionRemarks: _rr, jobTypes: loadedJobTypes, ...formDataToSet } = data;
+          const { docCode: _dc, totalAmount: _ta, serviceDetails: _sd, receptionRemarks: _rr, jobTypes: loadedJobTypes, vehicleChecklist: loadedChecklist, ...formDataToSet } = data;
           setFormData(formDataToSet);
-          if (loadedJobTypes) {
-            setSelectedJobTypes(loadedJobTypes);
+          if (loadedJobTypes) setSelectedJobTypes(loadedJobTypes);
+          
+          if (loadedChecklist && loadedChecklist.length > 0) {
+            const fullChecklist: VehicleChecklistItem[] = checklistMaster.map(masterItem => {
+              const existingItem = loadedChecklist.find(i => i.id === masterItem.id);
+              return existingItem || { id: masterItem.id, name: masterItem.name, status: 'N/A', remarks: '' };
+            });
+            setVehicleChecklist(fullChecklist);
+          } else {
+            initializeChecklist();
           }
-          // In a real app, you'd also set serviceDetails and receptionRemarks here
         } else {
           showError('Service reception not found.');
           navigate('/service-reception');
         }
       };
       fetchReception();
+    } else {
+      initializeChecklist();
     }
   }, [docCode, navigate]);
 
@@ -102,8 +116,7 @@ const ServiceReceptionFormPage = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const toastId = showLoading(isEditMode ? 'Updating record...' : 'Creating record...');
-    const totalAmount = serviceDetails.reduce((sum, d) => sum + d.amount, 0);
-    const payload = { ...formData, totalAmount, serviceDetails, receptionRemarks, jobTypes: selectedJobTypes };
+    const payload = { ...formData, serviceDetails, receptionRemarks, jobTypes: selectedJobTypes, vehicleChecklist };
 
     try {
       if (isEditMode && docCode) {
@@ -131,15 +144,12 @@ const ServiceReceptionFormPage = () => {
       showError("Item Code and Description are required.");
       return;
     }
-
     if (editingDetailId !== null) {
       setServiceDetails(details => details.map(d => d.id === editingDetailId ? { ...detailInput, id: d.id, amount: detailInput.qty * detailInput.rate } : d));
     } else {
-      const newDetail: ServiceDetail = { ...detailInput, id: nextDetailId, amount: detailInput.qty * detailInput.rate };
-      setServiceDetails(details => [...details, newDetail]);
+      setServiceDetails(details => [...details, { ...detailInput, id: nextDetailId, amount: detailInput.qty * detailInput.rate }]);
       setNextDetailId(id => id + 1);
     }
-    
     setDetailInput(initialDetailState);
     setEditingDetailId(null);
   };
@@ -163,16 +173,8 @@ const ServiceReceptionFormPage = () => {
   };
 
   const handleAddRemark = () => {
-    if (!remarkInput.trim()) {
-      showError("Remark cannot be empty.");
-      return;
-    }
-    const newRemark: ServiceReceptionRemark = {
-      id: nextRemarkId,
-      slNo: receptionRemarks.length + 1,
-      remarks: remarkInput.trim(),
-    };
-    setReceptionRemarks(prev => [...prev, newRemark]);
+    if (!remarkInput.trim()) { showError("Remark cannot be empty."); return; }
+    setReceptionRemarks(prev => [...prev, { id: nextRemarkId, slNo: prev.length + 1, remarks: remarkInput.trim() }]);
     setNextRemarkId(id => id + 1);
     setRemarkInput('');
   };
@@ -193,9 +195,13 @@ const ServiceReceptionFormPage = () => {
     setSelectedJobTypes(prev => prev.map(jt => jt.jobId === jobId ? { ...jt, remarks } : jt));
   };
 
-  const totalAmount = useMemo(() => {
-    return serviceDetails.reduce((sum, d) => sum + d.amount, 0);
-  }, [serviceDetails]);
+  const handleChecklistItemChange = (id: number, updatedItem: Partial<VehicleChecklistItem>) => {
+    setVehicleChecklist(prev =>
+      prev.map(item => (item.id === id ? { ...item, ...updatedItem } : item))
+    );
+  };
+
+  const totalAmount = useMemo(() => serviceDetails.reduce((sum, d) => sum + d.amount, 0), [serviceDetails]);
 
   return (
     <ErpLayout>
@@ -223,7 +229,6 @@ const ServiceReceptionFormPage = () => {
           <TabsContent value="customer">
             <div className="erp-section-header">Customer and Vehicle Details</div>
             <form id="customerVehicleForm" className="erp-grid" noValidate onSubmit={handleSubmit}>
-              {/* Main form fields... */}
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="docCode">DOC_CODE</Label><Input type="text" id="docCode" className="erp-form-input" readOnly value={isEditMode ? docCode : 'Generating...'} /></div>
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="docDate">Order Date</Label><Input type="date" id="docDate" className="erp-form-input" value={formData.docDate} onChange={handleInputChange} /></div>
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="vehicleNo">Vehicle No</Label><div className="input-with-button"><Input type="text" id="vehicleNo" className="erp-form-input" value={formData.vehicleNo} onChange={handleInputChange} /><button type="button" className="erp-add-btn" title="Register New Vehicle" onClick={() => setVehicleModalOpen(true)}>+</button></div></div>
@@ -240,8 +245,7 @@ const ServiceReceptionFormPage = () => {
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="broughtBy">Brought By</Label><Select value={formData.broughtBy} onValueChange={(v) => handleSelectChange('broughtBy', v)}><SelectTrigger id="broughtBy" className="erp-form-input"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Owner">Owner</SelectItem><SelectItem value="Driver">Driver</SelectItem><SelectItem value="Friend">Friend</SelectItem></SelectContent></Select></div>
               <div className="erp-form-group checkbox-group"><Checkbox id="carWash" checked={formData.carWash === 'Y'} onCheckedChange={handleCheckboxChange} /><Label htmlFor="carWash" className="erp-form-label font-normal">Car Wash</Label></div>
             </form>
-
-            <div id="service-details">
+            <div id="service-details" className="mt-6">
               <div className="erp-section-header">Service Details</div>
               <form id="erpDetailForm" className="erp-form-row" noValidate onSubmit={handleDetailFormSubmit}>
                 <div className="erp-form-group itemcode"><Label htmlFor="itemcode" className="erp-form-label">Item Code</Label><Input type="text" id="itemcode" className="erp-form-input" value={detailInput.itemcode} onChange={handleDetailInputChange} required /></div>
@@ -255,106 +259,24 @@ const ServiceReceptionFormPage = () => {
                 <button type="submit" className="erp-add-btn" title={editingDetailId ? "Update Detail" : "Add Detail (Ctrl+Enter)"}>{editingDetailId ? <Check size={16}/> : <Plus size={16}/>}</button>
                 {editingDetailId && <button type="button" onClick={cancelEdit} className="erp-add-btn" style={{background: '#f0ad4e'}} title="Cancel Edit"><Ban size={16}/></button>}
               </form>
-              <div className="table-responsive-wrapper">
-                <Table className="erp-table" id="tblServiceDetailsBody">
-                  <TableHeader><TableRow><TableHead>SL</TableHead><TableHead>Item Code</TableHead><TableHead>Description</TableHead><TableHead>Unit</TableHead><TableHead>Qty</TableHead><TableHead>Rate</TableHead><TableHead>Amount</TableHead><TableHead>Complaint</TableHead><TableHead>Scope</TableHead><TableHead>Remarks</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    {serviceDetails.map((detail, index) => (
-                      <TableRow key={detail.id}>
-                        <TableCell>{index + 1}</TableCell><TableCell>{detail.itemcode}</TableCell><TableCell>{detail.description}</TableCell><TableCell>{detail.unit}</TableCell><TableCell>{detail.qty}</TableCell><TableCell>{detail.rate.toFixed(2)}</TableCell><TableCell>{detail.amount.toFixed(2)}</TableCell><TableCell>{detail.customer_complaint}</TableCell><TableCell>{detail.scope_of_work}</TableCell><TableCell>{detail.remarks}</TableCell>
-                        <TableCell className="action-cell">
-                          <button className="action-btn" onClick={() => handleEditDetail(detail.id)}><FilePenLine size={14} /></button>
-                          <button className="action-btn" onClick={() => handleDeleteDetail(detail.id)}><Trash2 size={14} /></button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <div className="table-responsive-wrapper"><Table className="erp-table" id="tblServiceDetailsBody"><TableHeader><TableRow><TableHead>SL</TableHead><TableHead>Item Code</TableHead><TableHead>Description</TableHead><TableHead>Unit</TableHead><TableHead>Qty</TableHead><TableHead>Rate</TableHead><TableHead>Amount</TableHead><TableHead>Complaint</TableHead><TableHead>Scope</TableHead><TableHead>Remarks</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader><TableBody>{serviceDetails.map((detail, index) => (<TableRow key={detail.id}><TableCell>{index + 1}</TableCell><TableCell>{detail.itemcode}</TableCell><TableCell>{detail.description}</TableCell><TableCell>{detail.unit}</TableCell><TableCell>{detail.qty}</TableCell><TableCell>{detail.rate.toFixed(2)}</TableCell><TableCell>{detail.amount.toFixed(2)}</TableCell><TableCell>{detail.customer_complaint}</TableCell><TableCell>{detail.scope_of_work}</TableCell><TableCell>{detail.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" onClick={() => handleEditDetail(detail.id)}><FilePenLine size={14} /></button><button className="action-btn" onClick={() => handleDeleteDetail(detail.id)}><Trash2 size={14} /></button></TableCell></TableRow>))}</TableBody></Table></div>
               <div id="totalAmount" className="total-line">Total: <span>{totalAmount.toFixed(2)}</span></div>
             </div>
-
-            <div id="reception-remarks-section">
+            <div id="reception-remarks-section" className="mt-6">
               <div className="erp-section-header">Reception Remarks</div>
-              <div className="flex items-start gap-2 mb-4">
-                <Textarea
-                  id="receptionRemarkInput"
-                  placeholder="Enter remarks..."
-                  className="erp-form-input flex-grow"
-                  value={remarkInput}
-                  onChange={(e) => setRemarkInput(e.target.value)}
-                  rows={2}
-                />
-                <Button type="button" onClick={handleAddRemark} className="btn btn-secondary h-auto">Add Remark</Button>
-              </div>
-              <div className="table-responsive-wrapper">
-                <Table className="erp-table">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead style={{ width: '80px' }}>SL No.</TableHead>
-                      <TableHead>Remarks</TableHead>
-                      <TableHead style={{ width: '100px', textAlign: 'center' }}>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {receptionRemarks.map((remark) => (
-                      <TableRow key={remark.id}>
-                        <TableCell>{remark.slNo}</TableCell>
-                        <TableCell style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{remark.remarks}</TableCell>
-                        <TableCell className="action-cell">
-                          <button className="action-btn" onClick={() => handleDeleteRemark(remark.id)} title="Delete Remark">
-                            <Trash2 size={14} />
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                     {receptionRemarks.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center text-muted-foreground">No remarks added yet.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <div className="flex items-start gap-2 mb-4"><Textarea id="receptionRemarkInput" placeholder="Enter remarks..." className="erp-form-input flex-grow" value={remarkInput} onChange={(e) => setRemarkInput(e.target.value)} rows={2} /><Button type="button" onClick={handleAddRemark} className="btn btn-secondary h-auto">Add Remark</Button></div>
+              <div className="table-responsive-wrapper"><Table className="erp-table"><TableHeader><TableRow><TableHead style={{ width: '80px' }}>SL No.</TableHead><TableHead>Remarks</TableHead><TableHead style={{ width: '100px', textAlign: 'center' }}>Actions</TableHead></TableRow></TableHeader><TableBody>{receptionRemarks.map((remark) => (<TableRow key={remark.id}><TableCell>{remark.slNo}</TableCell><TableCell style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{remark.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" onClick={() => handleDeleteRemark(remark.id)} title="Delete Remark"><Trash2 size={14} /></button></TableCell></TableRow>))} {receptionRemarks.length === 0 && (<TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No remarks added yet.</TableCell></TableRow>)}</TableBody></Table></div>
             </div>
           </TabsContent>
           
           <TabsContent value="job-type">
             <div className="erp-section-header">Select Job Types</div>
-            <div className="space-y-4">
-              {allJobTypes.map(jobType => {
-                const isSelected = selectedJobTypes.some(sjt => sjt.jobId === jobType.jobId);
-                const currentRemarks = selectedJobTypes.find(sjt => sjt.jobId === jobType.jobId)?.remarks || '';
-                return (
-                  <div key={jobType.jobId} className="flex items-start gap-4 p-3 border rounded-md bg-secondary/50">
-                    <div className="flex items-center h-9">
-                      <Checkbox
-                        id={`job-type-${jobType.jobId}`}
-                        checked={isSelected}
-                        onCheckedChange={(checked) => handleJobTypeCheckChange(jobType.jobId, checked === true)}
-                      />
-                    </div>
-                    <div className="flex-grow grid gap-1.5">
-                      <Label htmlFor={`job-type-${jobType.jobId}`} className="font-semibold cursor-pointer">
-                        {jobType.jobTypeName}
-                      </Label>
-                      <Input
-                        id={`job-type-remarks-${jobType.jobId}`}
-                        placeholder="Add remarks for this job type..."
-                        className="erp-form-input"
-                        disabled={!isSelected}
-                        value={currentRemarks}
-                        onChange={(e) => handleJobTypeRemarkChange(jobType.jobId, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <div className="space-y-4">{allJobTypes.map(jobType => { const isSelected = selectedJobTypes.some(sjt => sjt.jobId === jobType.jobId); const currentRemarks = selectedJobTypes.find(sjt => sjt.jobId === jobType.jobId)?.remarks || ''; return (<div key={jobType.jobId} className="flex items-start gap-4 p-3 border rounded-md bg-secondary/50"><div className="flex items-center h-9"><Checkbox id={`job-type-${jobType.jobId}`} checked={isSelected} onCheckedChange={(checked) => handleJobTypeCheckChange(jobType.jobId, checked === true)} /></div><div className="flex-grow grid gap-1.5"><Label htmlFor={`job-type-${jobType.jobId}`} className="font-semibold cursor-pointer">{jobType.jobTypeName}</Label><Input id={`job-type-remarks-${jobType.jobId}`} placeholder="Add remarks for this job type..." className="erp-form-input" disabled={!isSelected} value={currentRemarks} onChange={(e) => handleJobTypeRemarkChange(jobType.jobId, e.target.value)} /></div></div>);})}</div>
           </TabsContent>
 
           <TabsContent value="vehicle-checklist">
-            <div className="p-4 text-center text-muted-foreground">Vehicle Check List content will go here.</div>
+            <div className="erp-section-header">Vehicle Check List</div>
+            <VehicleChecklist items={vehicleChecklist} onItemChange={handleChecklistItemChange} />
           </TabsContent>
 
           <TabsContent value="checklist-images">
