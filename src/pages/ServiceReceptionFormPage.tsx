@@ -65,9 +65,13 @@ const ServiceReceptionFormPage = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 's') {
+      if (event.ctrlKey && (event.key === 's' || event.key === 'S')) {
         event.preventDefault();
         document.getElementById('btn-save-form')?.click();
+      }
+      if (event.ctrlKey && (event.key === 'd' || event.key === 'D')) {
+        event.preventDefault();
+        document.getElementById('btn-delete-form')?.click();
       }
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -79,7 +83,7 @@ const ServiceReceptionFormPage = () => {
           case '2': event.preventDefault(); setActiveTab('job-type'); break;
           case '3': event.preventDefault(); setActiveTab('vehicle-checklist'); break;
           case '4': event.preventDefault(); setActiveTab('checklist-images'); break;
-          case 'i': event.preventDefault(); document.getElementById('itemcode')?.focus(); break;
+          case 'i': case 'I': event.preventDefault(); document.getElementById('itemcode')?.focus(); break;
         }
       }
       if (event.ctrlKey && event.key === 'Enter') {
@@ -183,7 +187,7 @@ const ServiceReceptionFormPage = () => {
             <Button type="submit" id="btn-save-form" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)">
               <Check className="h-4 w-4" /> Save
             </Button>
-            <Button type="button" id="btn-delete-form" className="btn btn-danger">
+            <Button type="button" id="btn-delete-form" className="btn btn-danger" title="Delete (Ctrl+D)">
               <Trash2 className="h-4 w-4" /> Delete
             </Button>
             <Button type="button" id="btn-cancel-form" className="btn btn-warning" title="Cancel and return to list (Esc)" onClick={() => navigate('/service-reception')}>
@@ -280,7 +284,7 @@ const ServiceReceptionFormPage = () => {
             <div id="service-details">
               <div className="erp-section-header">Service Details</div>
               <form id="erpDetailForm" className="erp-form-row" noValidate>
-                <div className="erp-form-group itemcode"><Label htmlFor="itemcode" className="erp-form-label" title="Focus with Alt+I">Item Code</Label><Input type="text" id="itemcode" className="erp-form-input" required /></div>
+                <div className="erp-form-group itemcode"><Label htmlFor="itemcode" className="erp-form-label">Item Code</Label><Input type="text" id="itemcode" className="erp-form-input" required /></div>
                 <div className="erp-form-group description"><Label htmlFor="description" className="erp-form-label">Description</Label><Input type="text" id="description" className="erp-form-input" required /></div>
                 <div className="erp-form-group unit"><Label htmlFor="unit" className="erp-form-label">Unit</Label><Input type="text" id="unit" className="erp-form-input" required /></div>
                 <div className="erp-form-group qty"><Label htmlFor="qty" className="erp-form-label">Qty</Label><Input type="number" id="qty" className="erp-form-input" defaultValue="1" required /></div>
