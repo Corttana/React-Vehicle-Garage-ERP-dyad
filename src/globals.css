@@ -579,6 +579,15 @@ button.action-btn:hover { color: #084a8a; }
   width: 100%;
 }
 
+/* --- Modal Z-Index Fix --- */
+/* Force shadcn/ui Dialog to be on top of sticky elements */
+[data-radix-dialog-overlay] {
+  z-index: 1050 !important;
+}
+[data-radix-dialog-content] {
+  z-index: 1051 !important;
+}
+
 /* --- Layout Adjustments for Compact View --- */
 #service-details > .erp-section-header {
   margin-top: 20px;
