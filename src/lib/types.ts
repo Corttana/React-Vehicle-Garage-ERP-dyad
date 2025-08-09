@@ -15,6 +15,10 @@ export interface ServiceReception {
   broughtBy: 'Owner' | 'Driver' | 'Friend';
   carWash: 'Y' | 'N';
   totalAmount: number;
+  // Optional properties for related data, makes payload handling easier
+  serviceDetails?: ServiceDetail[];
+  receptionRemarks?: ServiceReceptionRemark[];
+  jobTypes?: CustomerJobType[];
 }
 
 export interface ServiceDetail {
@@ -33,5 +37,16 @@ export interface ServiceDetail {
 export interface ServiceReceptionRemark {
   id: number; // Temporary client-side ID for list management
   slNo: number;
+  remarks: string;
+}
+
+export interface JobType {
+  jobId: number;
+  jobTypeName: string;
+  active: 'Y' | 'N';
+}
+
+export interface CustomerJobType {
+  jobId: number;
   remarks: string;
 }

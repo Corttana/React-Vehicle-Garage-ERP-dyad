@@ -13,10 +13,10 @@ import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Upload, Ban } from 'luc
 import VehicleRegistrationModal from '@/components/service-reception/VehicleRegistrationModal';
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
-import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception } from '@/lib/api';
-import { ServiceReception, ServiceDetail, ServiceReceptionRemark } from '@/lib/types';
+import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes } from '@/lib/api';
+import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType } from '@/lib/types';
 
-type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount'>;
+type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
 
 const initialDetailState: DetailFormData = {
@@ -54,15 +54,29 @@ const ServiceReceptionFormPage = () => {
   const [remarkInput, setRemarkInput] = useState('');
   const [nextRemarkId, setNextRemarkId] = useState(1);
 
+  const [allJobTypes, setAllJobTypes] = useState<JobType[]>([]);
+  const [selectedJobTypes, setSelectedJobTypes] = useState<CustomerJobType[]>([]);
+
+  useEffect(() => {
+    const fetchJobTypes = async () => {
+      const data = await getJobTypes();
+      setAllJobTypes(data);
+    };
+    fetchJobTypes();
+  }, []);
+
   useEffect(() => {
     if (docCode) {
       setIsEditMode(true);
       const fetchReception = async () => {
         const data = await getServiceReceptionByDocCode(docCode);
         if (data) {
-          const { docCode: _, totalAmount: __, ...formData } = data;
-          setFormData(formData);
-          // In a real app, you'd fetch details and remarks too.
+          const { docCode: _dc, totalAmount: _ta, serviceDetails: _sd, receptionRemarks: _rr, jobTypes: loadedJobTypes, ...formDataToSet } = data;
+          setFormData(formDataToSet);
+          if (loadedJobTypes) {
+            setSelectedJobTypes(loadedJobTypes);
+          }
+          // In a real app, you'd also set serviceDetails and receptionRemarks here
         } else {
           showError('Service reception not found.');
           navigate('/service-reception');
@@ -89,7 +103,7 @@ const ServiceReceptionFormPage = () => {
     e.preventDefault();
     const toastId = showLoading(isEditMode ? 'Updating record...' : 'Creating record...');
     const totalAmount = serviceDetails.reduce((sum, d) => sum + d.amount, 0);
-    const payload = { ...formData, totalAmount, serviceDetails, receptionRemarks };
+    const payload = { ...formData, totalAmount, serviceDetails, receptionRemarks, jobTypes: selectedJobTypes };
 
     try {
       if (isEditMode && docCode) {
@@ -165,6 +179,18 @@ const ServiceReceptionFormPage = () => {
 
   const handleDeleteRemark = (id: number) => {
     setReceptionRemarks(prev => prev.filter(r => r.id !== id).map((r, index) => ({ ...r, slNo: index + 1 })));
+  };
+
+  const handleJobTypeCheckChange = (jobId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedJobTypes(prev => [...prev, { jobId, remarks: '' }]);
+    } else {
+      setSelectedJobTypes(prev => prev.filter(jt => jt.jobId !== jobId));
+    }
+  };
+
+  const handleJobTypeRemarkChange = (jobId: number, remarks: string) => {
+    setSelectedJobTypes(prev => prev.map(jt => jt.jobId === jobId ? { ...jt, remarks } : jt));
   };
 
   const totalAmount = useMemo(() => {
@@ -292,7 +318,41 @@ const ServiceReceptionFormPage = () => {
               </div>
             </div>
           </TabsContent>
-          {/* Other TabsContent... */}
+          
+          <TabsContent value="job-type">
+            <div className="erp-section-header">Select Job Types</div>
+            <div className="space-y-4">
+              {allJobTypes.map(jobType => {
+                const isSelected = selectedJobTypes.some(sjt => sjt.jobId === jobType.jobId);
+                const currentRemarks = selectedJobTypes.find(sjt => sjt.jobId === jobType.jobId)?.remarks || '';
+                return (
+                  <div key={jobType.jobId} className="flex items-start gap-4 p-3 border rounded-md bg-secondary/50">
+                    <div className="flex items-center h-9">
+                      <Checkbox
+                        id={`job-type-${jobType.jobId}`}
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleJobTypeCheckChange(jobType.jobId, checked === true)}
+                      />
+                    </div>
+                    <div className="flex-grow grid gap-1.5">
+                      <Label htmlFor={`job-type-${jobType.jobId}`} className="font-semibold cursor-pointer">
+                        {jobType.jobTypeName}
+                      </Label>
+                      <Input
+                        id={`job-type-remarks-${jobType.jobId}`}
+                        placeholder="Add remarks for this job type..."
+                        className="erp-form-input"
+                        disabled={!isSelected}
+                        value={currentRemarks}
+                        onChange={(e) => handleJobTypeRemarkChange(jobType.jobId, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
         </Tabs>
       </div>
       <VehicleRegistrationModal isOpen={isVehicleModalOpen} onClose={() => setVehicleModalOpen(false)} />
