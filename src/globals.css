@@ -437,7 +437,7 @@ form.erp-form-row > .erp-form-group { flex-direction: column; align-items: flex-
 .erp-form-group.rate { width: 8%; }
 .erp-form-group.customer_complaint { width: 17%; }
 .erp-form-group.scope_of_work { width: 17%; }
-.erp-form-group.remarks { flex-grow: 1; }
+.erp-form-group.remarks { flex: 1 1 0; }
 form.erp-form-row > button.erp-add-btn { height: 28px; align-self: flex-end; margin-left: 0; }
 
 /* Service Detail Table Alignment */
