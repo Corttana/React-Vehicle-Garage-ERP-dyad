@@ -4,7 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
-import ServiceReceptionPage from "./pages/ServiceReceptionPage";
+import ServiceReceptionListPage from "./pages/ServiceReceptionListPage";
+import ServiceReceptionFormPage from "./pages/ServiceReceptionFormPage";
 
 const queryClient = new QueryClient();
 
@@ -15,7 +16,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<IndexPage />} />
-          <Route path="/service-reception" element={<ServiceReceptionPage />} />
+          <Route path="/service-reception" element={<ServiceReceptionListPage />} />
+          <Route path="/service-reception/new" element={<ServiceReceptionFormPage />} />
+          <Route path="/service-reception/edit/:id" element={<ServiceReceptionFormPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Upload } from 'lucide-r
 import VehicleRegistrationModal from '@/components/service-reception/VehicleRegistrationModal';
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 
-const ServiceReceptionPage = () => {
+const ServiceReceptionFormPage = () => {
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
 
@@ -31,9 +32,11 @@ const ServiceReceptionPage = () => {
       <div id="form-container" className="erp-container">
         <div className="form-header">
           <div className="form-header-left">
-            <Button type="button" id="btn-back-to-list" className="btn btn-secondary" title="Back to List (Esc)">
-              <ArrowLeft className="h-4 w-4" /> Back to List
-            </Button>
+            <Link to="/service-reception">
+              <Button type="button" id="btn-back-to-list" className="btn btn-secondary" title="Back to List (Esc)">
+                <ArrowLeft className="h-4 w-4" /> Back to List
+              </Button>
+            </Link>
             <h2 id="form-title">New Service Reception</h2>
           </div>
           <div className="form-header-actions">
@@ -245,4 +248,4 @@ const ServiceReceptionPage = () => {
   );
 };
 
-export default ServiceReceptionPage;
+export default ServiceReceptionFormPage;
