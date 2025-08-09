@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,9 @@ const Index = () => {
           <p className="text-5xl font-extrabold mb-6 text-primary">{count}</p>
           <Button onClick={() => setCount(count + 1)} className="px-8 py-4 text-lg">
             Increment
+          </Button>
+          <Button asChild variant="link" className="mt-4">
+            <Link to="/service-reception">Go to Vehicle Garage ERP</Link>
           </Button>
         </CardContent>
       </Card>
