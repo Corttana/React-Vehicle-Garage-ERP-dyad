@@ -18,7 +18,7 @@ const App = () => (
           <Route path="/" element={<DashboardPage />} />
           <Route path="/service-reception" element={<ServiceReceptionListPage />} />
           <Route path="/service-reception/new" element={<ServiceReceptionFormPage />} />
-          <Route path="/service-reception/edit/:id" element={<ServiceReceptionFormPage />} />
+          <Route path="/service-reception/edit/:docCode" element={<ServiceReceptionFormPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

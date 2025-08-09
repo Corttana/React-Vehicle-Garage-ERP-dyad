@@ -1,5 +1,5 @@
 export interface ServiceReception {
-  id: string;
+  docCode: string;
   docDate: string;
   vehicleNo: string;
   customerName: string;

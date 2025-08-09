@@ -100,10 +100,10 @@ const DashboardPage = () => {
                   </TableHeader>
                   <TableBody>
                     {recentServices.map(service => (
-                      <TableRow key={service.id}>
+                      <TableRow key={service.docCode}>
                         <TableCell className="font-medium">
-                          <Link to={`/service-reception/edit/${service.id}`} className="text-primary hover:underline">
-                            {service.id}
+                          <Link to={`/service-reception/edit/${service.docCode}`} className="text-primary hover:underline">
+                            {service.docCode}
                           </Link>
                         </TableCell>
                         <TableCell>{service.customerName}</TableCell>

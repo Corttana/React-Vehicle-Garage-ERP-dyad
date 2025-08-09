@@ -17,7 +17,7 @@ const ServiceReceptionListPage = () => {
   const [receptions, setReceptions] = useState<ServiceReception[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedDocCode, setSelectedDocCode] = useState<string | null>(null);
 
   const fetchReceptions = useCallback(async () => {
     setLoading(true);
@@ -47,15 +47,15 @@ const ServiceReceptionListPage = () => {
     };
   }, [navigate]);
 
-  const handleDeleteClick = (id: string) => {
-    setSelectedId(id);
+  const handleDeleteClick = (docCode: string) => {
+    setSelectedDocCode(docCode);
     setIsDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedId) return;
+    if (!selectedDocCode) return;
     const toastId = showLoading('Deleting record...');
-    const success = await deleteServiceReception(selectedId);
+    const success = await deleteServiceReception(selectedDocCode);
     dismissToast(toastId);
     if (success) {
       showSuccess('Record deleted successfully.');
@@ -64,7 +64,7 @@ const ServiceReceptionListPage = () => {
       showError('Failed to delete record.');
     }
     setIsDialogOpen(false);
-    setSelectedId(null);
+    setSelectedDocCode(null);
   };
 
   return (
@@ -107,17 +107,17 @@ const ServiceReceptionListPage = () => {
                 ))
               ) : (
                 receptions.map((reception) => (
-                  <TableRow key={reception.id}>
-                    <TableCell>{reception.id}</TableCell>
+                  <TableRow key={reception.docCode}>
+                    <TableCell>{reception.docCode}</TableCell>
                     <TableCell>{reception.docDate}</TableCell>
                     <TableCell>{reception.vehicleNo}</TableCell>
                     <TableCell>{reception.customerName}</TableCell>
                     <TableCell>{reception.status}</TableCell>
                     <TableCell className="action-cell">
-                      <Link to={`/service-reception/edit/${reception.id}`}>
+                      <Link to={`/service-reception/edit/${reception.docCode}`}>
                         <button className="action-btn" title="Edit"><FilePenLine size={14} /></button>
                       </Link>
-                      <button className="action-btn" title="Delete" onClick={() => handleDeleteClick(reception.id)}>
+                      <button className="action-btn" title="Delete" onClick={() => handleDeleteClick(reception.docCode)}>
                         <Trash2 size={14} />
                       </button>
                     </TableCell>

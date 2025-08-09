@@ -13,10 +13,10 @@ import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Upload, Ban } from 'luc
 import VehicleRegistrationModal from '@/components/service-reception/VehicleRegistrationModal';
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
-import { getServiceReceptionById, createServiceReception, updateServiceReception } from '@/lib/api';
+import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception } from '@/lib/api';
 import { ServiceReception, ServiceDetail } from '@/lib/types';
 
-type FormData = Omit<ServiceReception, 'id' | 'totalAmount'>;
+type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
 
 const initialDetailState: DetailFormData = {
@@ -32,7 +32,7 @@ const initialDetailState: DetailFormData = {
 
 const ServiceReceptionFormPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { docCode } = useParams<{ docCode: string }>();
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
@@ -51,12 +51,12 @@ const ServiceReceptionFormPage = () => {
   const [nextDetailId, setNextDetailId] = useState(1);
 
   useEffect(() => {
-    if (id) {
+    if (docCode) {
       setIsEditMode(true);
       const fetchReception = async () => {
-        const data = await getServiceReceptionById(id);
+        const data = await getServiceReceptionByDocCode(docCode);
         if (data) {
-          const { id: _, totalAmount: __, ...formData } = data;
+          const { docCode: _, totalAmount: __, ...formData } = data;
           setFormData(formData);
           // In a real app, you'd fetch details too. Here we'll leave it empty.
         } else {
@@ -66,7 +66,7 @@ const ServiceReceptionFormPage = () => {
       };
       fetchReception();
     }
-  }, [id, navigate]);
+  }, [docCode, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -88,8 +88,8 @@ const ServiceReceptionFormPage = () => {
     const payload = { ...formData, totalAmount, serviceDetails }; // Include details in payload
 
     try {
-      if (isEditMode && id) {
-        await updateServiceReception(id, payload);
+      if (isEditMode && docCode) {
+        await updateServiceReception(docCode, payload);
       } else {
         await createServiceReception(payload);
       }
@@ -160,7 +160,7 @@ const ServiceReceptionFormPage = () => {
         <div className="form-header">
           <div className="form-header-left">
             <Link to="/service-reception"><Button type="button" className="btn btn-secondary" title="Back to List (Esc)"><ArrowLeft className="h-4 w-4" /> Back to List</Button></Link>
-            <h2>{isEditMode ? `Edit Service Reception: ${id}` : 'New Service Reception'}</h2>
+            <h2>{isEditMode ? `Edit Service Reception: ${docCode}` : 'New Service Reception'}</h2>
           </div>
           <div className="form-header-actions">
             <Button type="submit" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)"><Check className="h-4 w-4" /> Save</Button>
@@ -181,7 +181,7 @@ const ServiceReceptionFormPage = () => {
             <div className="erp-section-header">Customer and Vehicle Details</div>
             <form id="customerVehicleForm" className="erp-grid" noValidate onSubmit={handleSubmit}>
               {/* Main form fields... */}
-              <div className="erp-form-group"><Label className="erp-form-label" htmlFor="serviceOrderNo">Service Order No</Label><Input type="text" id="serviceOrderNo" className="erp-form-input" readOnly value={isEditMode ? id : 'Generating...'} /></div>
+              <div className="erp-form-group"><Label className="erp-form-label" htmlFor="serviceOrderNo">Service Order No</Label><Input type="text" id="serviceOrderNo" className="erp-form-input" readOnly value={isEditMode ? docCode : 'Generating...'} /></div>
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="docDate">Order Date</Label><Input type="date" id="docDate" className="erp-form-input" value={formData.docDate} onChange={handleInputChange} /></div>
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="vehicleNo">Vehicle No</Label><div className="input-with-button"><Input type="text" id="vehicleNo" className="erp-form-input" value={formData.vehicleNo} onChange={handleInputChange} /><button type="button" className="erp-add-btn" title="Register New Vehicle" onClick={() => setVehicleModalOpen(true)}>+</button></div></div>
               <div className="erp-form-group"><Label className="erp-form-label" htmlFor="vehicleAccount">Vehicle Account</Label><div className="input-with-button"><Input type="text" id="vehicleAccount" className="erp-form-input" value={formData.vehicleAccount} onChange={handleInputChange} /><button type="button" className="erp-add-btn" title="Register New Customer" onClick={() => setCustomerModalOpen(true)}>+</button></div></div>
