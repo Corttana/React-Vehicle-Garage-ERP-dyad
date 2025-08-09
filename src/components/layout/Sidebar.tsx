@@ -37,7 +37,7 @@ const SidebarMenu = ({ items, isCollapsed }: { items: NavItem[], isCollapsed: bo
   };
 
   const renderItems = (items: NavItem[], parentPath: string) => {
-    return items.map((item, index) => {
+    return items.map((item) => {
       const currentPath = `${parentPath}/${item.name}`;
       const isOpen = openMenus.includes(currentPath);
       const hasChildren = item.children && item.children.length > 0;
@@ -45,7 +45,7 @@ const SidebarMenu = ({ items, isCollapsed }: { items: NavItem[], isCollapsed: bo
       const isActive = item.href === location.pathname || item.active;
 
       return (
-        <li key={index} className={`${hasChildren ? 'has-submenu' : ''} ${isOpen ? 'open' : ''}`}>
+        <li key={currentPath} className={`${hasChildren ? 'has-submenu' : ''} ${isOpen ? 'open' : ''}`}>
           <Link to={item.href || '#'} onClick={(e) => {
             if (hasChildren) {
               e.preventDefault();
