@@ -353,6 +353,14 @@ const ServiceReceptionFormPage = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="vehicle-checklist">
+            <div className="p-4 text-center text-muted-foreground">Vehicle Check List content will go here.</div>
+          </TabsContent>
+
+          <TabsContent value="checklist-images">
+            <div className="p-4 text-center text-muted-foreground">Check List Images content will go here.</div>
+          </TabsContent>
+
         </Tabs>
       </div>
       <VehicleRegistrationModal isOpen={isVehicleModalOpen} onClose={() => setVehicleModalOpen(false)} />
