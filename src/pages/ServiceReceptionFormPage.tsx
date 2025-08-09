@@ -39,6 +39,7 @@ const ServiceReceptionFormPage = () => {
   const navigate = useNavigate();
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('customer');
 
   // Initialize form state
   const [formData, setFormData] = useState<ServiceReceptionData>({
@@ -64,21 +65,30 @@ const ServiceReceptionFormPage = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Save on Ctrl+S
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
-        const saveButton = document.getElementById('btn-save-form');
-        saveButton?.click();
+        document.getElementById('btn-save-form')?.click();
       }
-      // Cancel/Go Back on Escape
       if (event.key === 'Escape') {
         event.preventDefault();
         navigate('/service-reception');
       }
+      if (event.altKey) {
+        switch (event.key) {
+          case '1': event.preventDefault(); setActiveTab('customer'); break;
+          case '2': event.preventDefault(); setActiveTab('job-type'); break;
+          case '3': event.preventDefault(); setActiveTab('vehicle-checklist'); break;
+          case '4': event.preventDefault(); setActiveTab('checklist-images'); break;
+          case 'i': event.preventDefault(); document.getElementById('itemcode')?.focus(); break;
+        }
+      }
+      if (event.ctrlKey && event.key === 'Enter') {
+        event.preventDefault();
+        document.getElementById('btn-add-detail')?.click();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -182,7 +192,7 @@ const ServiceReceptionFormPage = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="customer" id="erp-tabs">
+        <Tabs value={activeTab} onValueChange={setActiveTab} id="erp-tabs">
           <TabsList>
             <TabsTrigger value="customer" title="Alt+1">Customer Registration</TabsTrigger>
             <TabsTrigger value="job-type" title="Alt+2">Job Type</TabsTrigger>
@@ -278,7 +288,7 @@ const ServiceReceptionFormPage = () => {
                 <div className="erp-form-group customer_complaint"><Label htmlFor="customer_complaint" className="erp-form-label">Customer Complaint</Label><Input type="text" id="customer_complaint" className="erp-form-input" /></div>
                 <div className="erp-form-group scope_of_work"><Label htmlFor="scope_of_work" className="erp-form-label">Scope of Work</Label><Input type="text" id="scope_of_work" className="erp-form-input" /></div>
                 <div className="erp-form-group remarks"><Label htmlFor="remarks" className="erp-form-label">Remarks</Label><Input type="text" id="remarks" className="erp-form-input" /></div>
-                <button type="submit" className="erp-add-btn" title="Add Detail (Ctrl+Enter)">+</button>
+                <button type="submit" id="btn-add-detail" className="erp-add-btn" title="Add Detail (Ctrl+Enter)">+</button>
               </form>
               <div className="table-responsive-wrapper">
                 <Table className="erp-table" id="tblServiceDetailsBody">

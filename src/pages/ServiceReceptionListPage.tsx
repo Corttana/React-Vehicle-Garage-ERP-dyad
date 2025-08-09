@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, FilePenLine, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 
 const ServiceReceptionListPage = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'n') {
+        event.preventDefault();
+        navigate('/service-reception/new');
+      }
+      if (event.key === '/') {
+        event.preventDefault();
+        document.getElementById('list-search-input')?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigate]);
+
   const serviceReceptions = [
     { id: 'SR-001', date: '2023-10-26', vehicleNo: 'V-1234', customer: 'John Doe', status: 'Completed' },
     { id: 'SR-002', date: '2023-10-25', vehicleNo: 'V-5678', customer: 'Jane Smith', status: 'In Progress' },
@@ -22,7 +41,7 @@ const ServiceReceptionListPage = () => {
         <div className="list-header">
           <h1 className="list-title">Service Reception</h1>
           <Link to="/service-reception/new">
-            <Button className="btn btn-primary">
+            <Button className="btn btn-primary" title="Create New (N)">
               <Plus className="h-4 w-4" /> Create New
             </Button>
           </Link>
@@ -31,7 +50,7 @@ const ServiceReceptionListPage = () => {
         <div className="list-filters">
           <div className="search-wrapper">
             <Search className="lucide" />
-            <Input type="text" placeholder="Search records..." className="erp-form-input" />
+            <Input id="list-search-input" type="text" placeholder="Search records... (/)" className="erp-form-input" />
           </div>
         </div>
 
