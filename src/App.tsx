@@ -3,7 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
-import IndexPage from "./pages/Index";
+import DashboardPage from "./pages/DashboardPage";
 import ServiceReceptionListPage from "./pages/ServiceReceptionListPage";
 import ServiceReceptionFormPage from "./pages/ServiceReceptionFormPage";
 
@@ -15,7 +15,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<IndexPage />} />
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/service-reception" element={<ServiceReceptionListPage />} />
           <Route path="/service-reception/new" element={<ServiceReceptionFormPage />} />
           <Route path="/service-reception/edit/:id" element={<ServiceReceptionFormPage />} />

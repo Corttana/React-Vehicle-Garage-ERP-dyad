@@ -1,5 +1,5 @@
-import React, { useState, FormEvent, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, FormEvent, useEffect, useCallback } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,56 +13,52 @@ import { ArrowLeft, Check, Trash2, X, Plus, FilePenLine, Upload } from 'lucide-r
 import VehicleRegistrationModal from '@/components/service-reception/VehicleRegistrationModal';
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
+import { getServiceReceptionById, createServiceReception, updateServiceReception, ServiceReception } from '@/lib/api';
 
-// Interface for the form data based on your table structure
-interface ServiceReceptionData {
-  DOC_CODE: string | null;
-  DOC_DATE: string;
-  MOBILE_NO: string;
-  CUSTOMER_NAME: string;
-  ADDRESS: string;
-  BUILDING: string;
-  ZONE: string;
-  STREET: string;
-  VEHICLE_ACCOUNT: string;
-  SERVICE_ORDER_NO: string | null;
-  ORDER_DATE: string;
-  VINO: string;
-  ODOMETER_READING: string;
-  STATUS: string;
-  BROUGHT_BY: string;
-  CAR_WASH: 'Y' | 'N';
-  VEHICLE_NO: string;
-}
+type FormData = Omit<ServiceReception, 'id' | 'totalAmount'>;
 
 const ServiceReceptionFormPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  // Initialize form state
-  const [formData, setFormData] = useState<ServiceReceptionData>({
-    DOC_CODE: null, // Assumed to be backend generated
-    DOC_DATE: new Date().toISOString().substring(0, 10),
-    MOBILE_NO: '',
-    CUSTOMER_NAME: '',
-    ADDRESS: '',
-    BUILDING: '',
-    ZONE: '',
-    STREET: '',
-    VEHICLE_ACCOUNT: '',
-    SERVICE_ORDER_NO: null, // Assumed to be backend generated
-    ORDER_DATE: new Date().toISOString().substring(0, 10),
-    VINO: '',
-    ODOMETER_READING: '',
-    STATUS: 'Pending',
-    BROUGHT_BY: 'Owner',
-    CAR_WASH: 'N',
-    VEHICLE_NO: '',
+  const [formData, setFormData] = useState<FormData>({
+    docDate: new Date().toISOString().substring(0, 10),
+    mobileNo: '',
+    customerName: '',
+    address: '',
+    building: '',
+    zone: '',
+    street: '',
+    vehicleAccount: '',
+    vino: '',
+    odometerReading: '',
+    status: 'Pending',
+    broughtBy: 'Owner',
+    carWash: 'N',
+    vehicleNo: '',
   });
 
-  // Keyboard shortcuts
+  useEffect(() => {
+    if (id) {
+      setIsEditMode(true);
+      const fetchReception = async () => {
+        const data = await getServiceReceptionById(id);
+        if (data) {
+          const { id: _, totalAmount: __, ...formData } = data;
+          setFormData(formData);
+        } else {
+          showError('Service reception not found.');
+          navigate('/service-reception');
+        }
+      };
+      fetchReception();
+    }
+  }, [id, navigate]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && (event.key === 's' || event.key === 'S')) {
@@ -98,66 +94,35 @@ const ServiceReceptionFormPage = () => {
     };
   }, [navigate]);
 
-  // Generic handler for input and textarea changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    const keyMap: { [key: string]: keyof ServiceReceptionData } = {
-      txtDocDate: 'DOC_DATE',
-      txtMobile: 'MOBILE_NO',
-      txtCustomerName: 'CUSTOMER_NAME',
-      txtAddress: 'ADDRESS',
-      txtBuilding: 'BUILDING',
-      txtZone: 'ZONE',
-      txtStreet: 'STREET',
-      txtVehicleAccount: 'VEHICLE_ACCOUNT',
-      txtVino: 'VINO',
-      txtOdometer: 'ODOMETER_READING',
-      txtVehicleNo: 'VEHICLE_NO',
-    };
-    const stateKey = keyMap[id];
-    if (stateKey) {
-      setFormData(prev => ({ ...prev, [stateKey]: value }));
-    }
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  // Handler for select components
-  const handleSelectChange = (key: keyof ServiceReceptionData, value: string) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
+  const handleSelectChange = (key: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [key]: value as any }));
   };
 
-  // Handler for checkbox component
   const handleCheckboxChange = (checked: boolean | 'indeterminate') => {
-    setFormData(prev => ({ ...prev, CAR_WASH: checked === true ? 'Y' : 'N' }));
+    setFormData(prev => ({ ...prev, carWash: checked === true ? 'Y' : 'N' }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const toastId = showLoading('Saving service reception data...');
+    const toastId = showLoading(isEditMode ? 'Updating record...' : 'Creating record...');
     
-    const payload = { ...formData, ORDER_DATE: formData.DOC_DATE };
-
-    console.log('Submitting the following data to /api/service-reception:', JSON.stringify(payload, null, 2));
-
     try {
-      const response = await fetch('/api/service-reception', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      dismissToast(toastId);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
-        showError(`Failed to save: ${errorData.message || response.statusText}`);
-        return;
+      if (isEditMode && id) {
+        await updateServiceReception(id, formData);
+      } else {
+        await createServiceReception(formData);
       }
-      
-      showSuccess('Service reception saved successfully!');
+      dismissToast(toastId);
+      showSuccess(`Service reception ${isEditMode ? 'updated' : 'created'} successfully!`);
+      navigate('/service-reception');
     } catch (error) {
       dismissToast(toastId);
-      console.error('Error submitting form:', error);
-      showError('An error occurred while connecting to the server.');
+      showError('An error occurred.');
     }
   };
 
@@ -181,13 +146,13 @@ const ServiceReceptionFormPage = () => {
                 <ArrowLeft className="h-4 w-4" /> Back to List
               </Button>
             </Link>
-            <h2 id="form-title">New Service Reception</h2>
+            <h2 id="form-title">{isEditMode ? `Edit Service Reception: ${id}` : 'New Service Reception'}</h2>
           </div>
           <div className="form-header-actions">
             <Button type="submit" id="btn-save-form" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)">
               <Check className="h-4 w-4" /> Save
             </Button>
-            <Button type="button" id="btn-delete-form" className="btn btn-danger" title="Delete (Ctrl+D)">
+            <Button type="button" id="btn-delete-form" className="btn btn-danger" title="Delete (Ctrl+D)" disabled={!isEditMode}>
               <Trash2 className="h-4 w-4" /> Delete
             </Button>
             <Button type="button" id="btn-cancel-form" className="btn btn-warning" title="Cancel and return to list (Esc)" onClick={() => navigate('/service-reception')}>
@@ -208,76 +173,76 @@ const ServiceReceptionFormPage = () => {
             <div className="erp-section-header">Customer and Vehicle Details</div>
             <form id="customerVehicleForm" className="erp-grid" noValidate onSubmit={handleSubmit}>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtDocCode">Service Order No</Label>
-                <Input type="text" id="txtDocCode" className="erp-form-input" readOnly value="Generating..." />
+                <Label className="erp-form-label" htmlFor="serviceOrderNo">Service Order No</Label>
+                <Input type="text" id="serviceOrderNo" className="erp-form-input" readOnly value={isEditMode ? id : 'Generating...'} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtDocDate">Order Date</Label>
-                <Input type="date" id="txtDocDate" className="erp-form-input" value={formData.DOC_DATE} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="docDate">Order Date</Label>
+                <Input type="date" id="docDate" className="erp-form-input" value={formData.docDate} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtVehicleNo">Vehicle No</Label>
+                <Label className="erp-form-label" htmlFor="vehicleNo">Vehicle No</Label>
                 <div className="input-with-button">
-                  <Input type="text" id="txtVehicleNo" className="erp-form-input" placeholder="Enter Vehicle No" value={formData.VEHICLE_NO} onChange={handleInputChange} />
+                  <Input type="text" id="vehicleNo" className="erp-form-input" placeholder="Enter Vehicle No" value={formData.vehicleNo} onChange={handleInputChange} />
                   <button type="button" id="btn-add-vehicle" className="erp-add-btn" title="Register New Vehicle" onClick={() => setVehicleModalOpen(true)}>+</button>
                 </div>
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtVehicleAccount">Vehicle Account</Label>
+                <Label className="erp-form-label" htmlFor="vehicleAccount">Vehicle Account</Label>
                 <div className="input-with-button">
-                  <Input type="text" id="txtVehicleAccount" className="erp-form-input" placeholder="Enter Vehicle Account" value={formData.VEHICLE_ACCOUNT} onChange={handleInputChange} />
+                  <Input type="text" id="vehicleAccount" className="erp-form-input" placeholder="Enter Vehicle Account" value={formData.vehicleAccount} onChange={handleInputChange} />
                   <button type="button" id="btn-add-customer" className="erp-add-btn" title="Register New Customer Account" onClick={() => setCustomerModalOpen(true)}>+</button>
                 </div>
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtCustomerName">Customer Name</Label>
-                <Input type="text" id="txtCustomerName" className="erp-form-input" value={formData.CUSTOMER_NAME} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="customerName">Customer Name</Label>
+                <Input type="text" id="customerName" className="erp-form-input" value={formData.customerName} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtVino">VINO</Label>
-                <Input type="text" id="txtVino" className="erp-form-input" value={formData.VINO} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="vino">VINO</Label>
+                <Input type="text" id="vino" className="erp-form-input" value={formData.vino} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtOdometer">Odometer Reading</Label>
-                <Input type="number" id="txtOdometer" className="erp-form-input" min="0" value={formData.ODOMETER_READING} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="odometerReading">Odometer Reading</Label>
+                <Input type="number" id="odometerReading" className="erp-form-input" min="0" value={formData.odometerReading} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtAddress">Address</Label>
-                <Textarea id="txtAddress" className="erp-form-input" rows={1} value={formData.ADDRESS} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="address">Address</Label>
+                <Textarea id="address" className="erp-form-input" rows={1} value={formData.address} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtBuilding">Building</Label>
-                <Input type="text" id="txtBuilding" className="erp-form-input" value={formData.BUILDING} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="building">Building</Label>
+                <Input type="text" id="building" className="erp-form-input" value={formData.building} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtZone">Zone</Label>
-                <Input type="text" id="txtZone" className="erp-form-input" value={formData.ZONE} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="zone">Zone</Label>
+                <Input type="text" id="zone" className="erp-form-input" value={formData.zone} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtStreet">Street</Label>
-                <Input type="text" id="txtStreet" className="erp-form-input" value={formData.STREET} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="street">Street</Label>
+                <Input type="text" id="street" className="erp-form-input" value={formData.street} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="txtMobile">Mobile No</Label>
-                <Input type="tel" id="txtMobile" className="erp-form-input" maxLength={15} value={formData.MOBILE_NO} onChange={handleInputChange} />
+                <Label className="erp-form-label" htmlFor="mobileNo">Mobile No</Label>
+                <Input type="tel" id="mobileNo" className="erp-form-input" maxLength={15} value={formData.mobileNo} onChange={handleInputChange} />
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="ddlStatus">Status</Label>
-                <Select value={formData.STATUS} onValueChange={(value) => handleSelectChange('STATUS', value)}>
-                  <SelectTrigger id="ddlStatus" className="erp-form-input"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Approved">Approved</SelectItem></SelectContent>
+                <Label className="erp-form-label" htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                  <SelectTrigger id="status" className="erp-form-input"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Cancelled">Cancelled</SelectItem></SelectContent>
                 </Select>
               </div>
               <div className="erp-form-group">
-                <Label className="erp-form-label" htmlFor="ddlBroughtBy">Brought By</Label>
-                <Select value={formData.BROUGHT_BY} onValueChange={(value) => handleSelectChange('BROUGHT_BY', value)}>
-                  <SelectTrigger id="ddlBroughtBy" className="erp-form-input"><SelectValue /></SelectTrigger>
+                <Label className="erp-form-label" htmlFor="broughtBy">Brought By</Label>
+                <Select value={formData.broughtBy} onValueChange={(value) => handleSelectChange('broughtBy', value)}>
+                  <SelectTrigger id="broughtBy" className="erp-form-input"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="Owner">Owner</SelectItem><SelectItem value="Driver">Driver</SelectItem><SelectItem value="Friend">Friend</SelectItem></SelectContent>
                 </Select>
               </div>
               <div className="erp-form-group checkbox-group">
-                <Checkbox id="chkCarWash" checked={formData.CAR_WASH === 'Y'} onCheckedChange={handleCheckboxChange} />
-                <Label htmlFor="chkCarWash" className="erp-form-label font-normal">Car Wash</Label>
+                <Checkbox id="carWash" checked={formData.carWash === 'Y'} onCheckedChange={handleCheckboxChange} />
+                <Label htmlFor="carWash" className="erp-form-label font-normal">Car Wash</Label>
               </div>
             </form>
 
@@ -342,7 +307,6 @@ const ServiceReceptionFormPage = () => {
               <Table className="erp-table" id="tblJobTypes">
                 <TableHeader><TableRow><TableHead>Job Type</TableHead><TableHead>Select</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
                 <TableBody>
-                  {/* Placeholder Data */}
                   <TableRow><TableCell>Periodic Maintenance</TableCell><TableCell><Checkbox /></TableCell><TableCell><Input className="erp-form-input" /></TableCell></TableRow>
                   <TableRow><TableCell>Running Repair</TableCell><TableCell><Checkbox /></TableCell><TableCell><Input className="erp-form-input" /></TableCell></TableRow>
                 </TableBody>
@@ -357,7 +321,6 @@ const ServiceReceptionFormPage = () => {
               <Table className="erp-table" id="tblVehicleChecklist">
                 <TableHeader><TableRow><TableHead>Item</TableHead><TableHead>✓</TableHead><TableHead>Notes / Issues Found</TableHead></TableRow></TableHeader>
                 <TableBody>
-                  {/* Placeholder Data */}
                   <TableRow><TableCell>Headlights</TableCell><TableCell><Checkbox /></TableCell><TableCell><Input className="erp-form-input" /></TableCell></TableRow>
                   <TableRow><TableCell>Tire Pressure</TableCell><TableCell><Checkbox /></TableCell><TableCell><Input className="erp-form-input" /></TableCell></TableRow>
                 </TableBody>

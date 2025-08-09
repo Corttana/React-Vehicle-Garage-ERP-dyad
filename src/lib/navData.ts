@@ -51,8 +51,8 @@ export const subMenus: Record<string, NavItem[]> = {
       name: 'Service Operations',
       icon: Headset,
       children: [
-        { name: 'Dashboard', href: '#' },
-        { name: 'Service Reception', href: '/service-reception', active: true },
+        { name: 'Dashboard', href: '/', active: true },
+        { name: 'Service Reception', href: '/service-reception' },
         {
           name: 'Vehicle Management',
           href: '#',
