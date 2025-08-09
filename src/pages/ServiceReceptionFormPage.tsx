@@ -64,53 +64,21 @@ const ServiceReceptionFormPage = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const activeEl = document.activeElement as HTMLElement;
-      const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
-
-      // Global shortcuts that should work even in inputs
+      // Save on Ctrl+S
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
-        document.getElementById('btn-save-form')?.click();
-        return;
+        const saveButton = document.getElementById('btn-save-form');
+        saveButton?.click();
       }
+      // Cancel/Go Back on Escape
       if (event.key === 'Escape') {
         event.preventDefault();
         navigate('/service-reception');
-        return;
-      }
-      if (event.ctrlKey && event.key === 'Enter') {
-        // Only trigger if focus is within the detail form
-        if (document.getElementById('erpDetailForm')?.contains(activeEl)) {
-            event.preventDefault();
-            document.querySelector<HTMLButtonElement>('#erpDetailForm button[type="submit"]')?.click();
-        }
-        return;
-      }
-
-      // Tab navigation (Alt + 1-4)
-      if (event.altKey && ['1', '2', '3', '4'].includes(event.key)) {
-        event.preventDefault();
-        const tabMap: { [key: string]: string } = {
-          '1': 'customer',
-          '2': 'job-type',
-          '3': 'vehicle-checklist',
-          '4': 'checklist-images',
-        };
-        document.querySelector<HTMLButtonElement>(`#erp-tabs [role="tab"][value="${tabMap[event.key]}"]`)?.click();
-        return;
-      }
-      
-      // Shortcuts that should NOT work when typing
-      if (isTyping) return;
-
-      // Focus on Item Code input (Alt + I)
-      if (event.altKey && event.key.toLowerCase() === 'i') {
-        event.preventDefault();
-        document.getElementById('itemcode')?.focus();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };

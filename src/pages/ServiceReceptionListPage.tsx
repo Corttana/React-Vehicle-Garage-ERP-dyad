@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
@@ -16,35 +16,13 @@ const ServiceReceptionListPage = () => {
     { id: 'SR-005', date: '2023-10-22', vehicleNo: 'V-8901', customer: 'Mary Johnson', status: 'Cancelled' },
   ];
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't trigger shortcuts if the user is typing in an input
-      if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-        return;
-      }
-      if (event.key === '/') {
-        event.preventDefault();
-        document.getElementById('list-search-input')?.focus();
-      }
-      if (event.key.toLowerCase() === 'n') {
-        event.preventDefault();
-        document.getElementById('create-new-link')?.click();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
   return (
     <ErpLayout>
       <div className="erp-container">
         <div className="list-header">
           <h1 className="list-title">Service Reception</h1>
-          <Link to="/service-reception/new" id="create-new-link">
-            <Button className="btn btn-primary" title="Create a new record (n)">
+          <Link to="/service-reception/new">
+            <Button className="btn btn-primary">
               <Plus className="h-4 w-4" /> Create New
             </Button>
           </Link>
@@ -53,7 +31,7 @@ const ServiceReceptionListPage = () => {
         <div className="list-filters">
           <div className="search-wrapper">
             <Search className="lucide" />
-            <Input type="text" id="list-search-input" placeholder="Search records... (Press '/' to focus)" className="erp-form-input" />
+            <Input type="text" placeholder="Search records..." className="erp-form-input" />
           </div>
         </div>
 
