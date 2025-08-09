@@ -24,7 +24,7 @@ export interface ServiceReception {
 export interface ServiceDetail {
   id: number;
   itemcode: string;
-  description: string;
+  description:string;
   unit: string;
   qty: number;
   rate: number;
@@ -54,6 +54,6 @@ export interface CustomerJobType {
 export interface VehicleChecklistItem {
   id: number;
   name: string;
-  status: 'OK' | 'Not OK' | 'N/A';
+  status: 'OK' | 'Not OK';
   remarks: string;
 }

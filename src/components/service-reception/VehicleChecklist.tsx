@@ -2,7 +2,7 @@ import React from 'react';
 import { VehicleChecklistItem } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface VehicleChecklistProps {
@@ -11,8 +11,8 @@ interface VehicleChecklistProps {
 }
 
 const VehicleChecklist = ({ items, onItemChange }: VehicleChecklistProps) => {
-  const handleStatusChange = (id: number, status: 'OK' | 'Not OK' | 'N/A') => {
-    onItemChange(id, { status });
+  const handleStatusChange = (id: number, checked: boolean) => {
+    onItemChange(id, { status: checked ? 'OK' : 'Not OK' });
   };
 
   const handleRemarksChange = (id: number, remarks: string) => {
@@ -25,7 +25,7 @@ const VehicleChecklist = ({ items, onItemChange }: VehicleChecklistProps) => {
         <TableHeader>
           <TableRow>
             <TableHead>Checklist Item</TableHead>
-            <TableHead style={{ width: '250px' }}>Status</TableHead>
+            <TableHead style={{ width: '120px' }}>Status</TableHead>
             <TableHead>Remarks</TableHead>
           </TableRow>
         </TableHeader>
@@ -34,24 +34,14 @@ const VehicleChecklist = ({ items, onItemChange }: VehicleChecklistProps) => {
             <TableRow key={item.id}>
               <TableCell className="font-medium">{item.name}</TableCell>
               <TableCell>
-                <RadioGroup
-                  value={item.status}
-                  className="flex items-center gap-4"
-                  onValueChange={(value) => handleStatusChange(item.id, value as any)}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="OK" id={`status-ok-${item.id}`} />
-                    <Label htmlFor={`status-ok-${item.id}`}>OK</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Not OK" id={`status-notok-${item.id}`} />
-                    <Label htmlFor={`status-notok-${item.id}`}>Not OK</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="N/A" id={`status-na-${item.id}`} />
-                    <Label htmlFor={`status-na-${item.id}`}>N/A</Label>
-                  </div>
-                </RadioGroup>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`status-${item.id}`}
+                    checked={item.status === 'OK'}
+                    onCheckedChange={(checked) => handleStatusChange(item.id, checked === true)}
+                  />
+                  <Label htmlFor={`status-${item.id}`} className="cursor-pointer">{item.status}</Label>
+                </div>
               </TableCell>
               <TableCell>
                 <Input

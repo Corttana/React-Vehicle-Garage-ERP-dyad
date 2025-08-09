@@ -66,7 +66,7 @@ const ServiceReceptionFormPage = () => {
       setVehicleChecklist(checklistMaster.map(item => ({
         id: item.id,
         name: item.name,
-        status: 'N/A',
+        status: 'Not OK',
         remarks: ''
       })));
     };
@@ -107,7 +107,13 @@ const ServiceReceptionFormPage = () => {
           if (loadedChecklist && loadedChecklist.length > 0) {
             const fullChecklist: VehicleChecklistItem[] = checklistMaster.map(masterItem => {
               const existingItem = loadedChecklist.find(i => i.id === masterItem.id);
-              return existingItem || { id: masterItem.id, name: masterItem.name, status: 'N/A', remarks: '' };
+              if (existingItem) {
+                // Coerce old 'N/A' status to 'Not OK' for compatibility
+                const status = (existingItem.status as any) === 'N/A' ? 'Not OK' : existingItem.status;
+                return { ...existingItem, status };
+              }
+              // For master items not in the loaded checklist, create a new one
+              return { id: masterItem.id, name: masterItem.name, status: 'Not OK', remarks: '' };
             });
             setVehicleChecklist(fullChecklist);
           } else {
