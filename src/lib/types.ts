@@ -29,3 +29,9 @@ export interface ServiceDetail {
   scope_of_work: string;
   remarks: string;
 }
+
+export interface ServiceReceptionRemark {
+  id: number; // Temporary client-side ID for list management
+  slNo: number;
+  remarks: string;
+}

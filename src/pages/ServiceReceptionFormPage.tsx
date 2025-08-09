@@ -14,7 +14,7 @@ import VehicleRegistrationModal from '@/components/service-reception/VehicleRegi
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
 import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception } from '@/lib/api';
-import { ServiceReception, ServiceDetail } from '@/lib/types';
+import { ServiceReception, ServiceDetail, ServiceReceptionRemark } from '@/lib/types';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
@@ -50,6 +50,10 @@ const ServiceReceptionFormPage = () => {
   const [editingDetailId, setEditingDetailId] = useState<number | null>(null);
   const [nextDetailId, setNextDetailId] = useState(1);
 
+  const [receptionRemarks, setReceptionRemarks] = useState<ServiceReceptionRemark[]>([]);
+  const [remarkInput, setRemarkInput] = useState('');
+  const [nextRemarkId, setNextRemarkId] = useState(1);
+
   useEffect(() => {
     if (docCode) {
       setIsEditMode(true);
@@ -58,7 +62,7 @@ const ServiceReceptionFormPage = () => {
         if (data) {
           const { docCode: _, totalAmount: __, ...formData } = data;
           setFormData(formData);
-          // In a real app, you'd fetch details too. Here we'll leave it empty.
+          // In a real app, you'd fetch details and remarks too.
         } else {
           showError('Service reception not found.');
           navigate('/service-reception');
@@ -85,7 +89,7 @@ const ServiceReceptionFormPage = () => {
     e.preventDefault();
     const toastId = showLoading(isEditMode ? 'Updating record...' : 'Creating record...');
     const totalAmount = serviceDetails.reduce((sum, d) => sum + d.amount, 0);
-    const payload = { ...formData, totalAmount, serviceDetails }; // Include details in payload
+    const payload = { ...formData, totalAmount, serviceDetails, receptionRemarks };
 
     try {
       if (isEditMode && docCode) {
@@ -115,15 +119,9 @@ const ServiceReceptionFormPage = () => {
     }
 
     if (editingDetailId !== null) {
-      // Update existing detail
       setServiceDetails(details => details.map(d => d.id === editingDetailId ? { ...detailInput, id: d.id, amount: detailInput.qty * detailInput.rate } : d));
     } else {
-      // Add new detail
-      const newDetail: ServiceDetail = {
-        ...detailInput,
-        id: nextDetailId,
-        amount: detailInput.qty * detailInput.rate,
-      };
+      const newDetail: ServiceDetail = { ...detailInput, id: nextDetailId, amount: detailInput.qty * detailInput.rate };
       setServiceDetails(details => [...details, newDetail]);
       setNextDetailId(id => id + 1);
     }
@@ -148,6 +146,25 @@ const ServiceReceptionFormPage = () => {
   const cancelEdit = () => {
     setDetailInput(initialDetailState);
     setEditingDetailId(null);
+  };
+
+  const handleAddRemark = () => {
+    if (!remarkInput.trim()) {
+      showError("Remark cannot be empty.");
+      return;
+    }
+    const newRemark: ServiceReceptionRemark = {
+      id: nextRemarkId,
+      slNo: receptionRemarks.length + 1,
+      remarks: remarkInput.trim(),
+    };
+    setReceptionRemarks(prev => [...prev, newRemark]);
+    setNextRemarkId(id => id + 1);
+    setRemarkInput('');
+  };
+
+  const handleDeleteRemark = (id: number) => {
+    setReceptionRemarks(prev => prev.filter(r => r.id !== id).map((r, index) => ({ ...r, slNo: index + 1 })));
   };
 
   const totalAmount = useMemo(() => {
@@ -230,7 +247,50 @@ const ServiceReceptionFormPage = () => {
               </div>
               <div id="totalAmount" className="total-line">Total: <span>{totalAmount.toFixed(2)}</span></div>
             </div>
-            {/* Other sections... */}
+
+            <div id="reception-remarks-section">
+              <div className="erp-section-header">Reception Remarks</div>
+              <div className="flex items-start gap-2 mb-4">
+                <Textarea
+                  id="receptionRemarkInput"
+                  placeholder="Enter remarks..."
+                  className="erp-form-input flex-grow"
+                  value={remarkInput}
+                  onChange={(e) => setRemarkInput(e.target.value)}
+                  rows={2}
+                />
+                <Button type="button" onClick={handleAddRemark} className="btn btn-secondary h-auto">Add Remark</Button>
+              </div>
+              <div className="table-responsive-wrapper">
+                <Table className="erp-table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead style={{ width: '80px' }}>SL No.</TableHead>
+                      <TableHead>Remarks</TableHead>
+                      <TableHead style={{ width: '100px', textAlign: 'center' }}>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {receptionRemarks.map((remark) => (
+                      <TableRow key={remark.id}>
+                        <TableCell>{remark.slNo}</TableCell>
+                        <TableCell style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{remark.remarks}</TableCell>
+                        <TableCell className="action-cell">
+                          <button className="action-btn" onClick={() => handleDeleteRemark(remark.id)} title="Delete Remark">
+                            <Trash2 size={14} />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                     {receptionRemarks.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground">No remarks added yet.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </TabsContent>
           {/* Other TabsContent... */}
         </Tabs>
