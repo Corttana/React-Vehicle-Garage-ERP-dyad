@@ -34,6 +34,12 @@ const ServiceDetailsTable = () => {
 
   return (
     <div className="space-y-4">
+       <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Services & Items</h3>
+        <Button type="button" variant="outline" onClick={handleAddRow}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Row
+        </Button>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -83,22 +89,17 @@ const ServiceDetailsTable = () => {
             })}
              {fields.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
-                        No services added.
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-4">
+                        No services added. Click "Add Row" to begin.
                     </TableCell>
                 </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex justify-between items-center">
-        <Button type="button" variant="outline" onClick={handleAddRow}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Row
-        </Button>
-        <div className="flex items-center gap-4">
-          <span className="font-semibold text-lg">Total Amount:</span>
-          <span className="text-xl font-bold text-primary">${calculateTotal().toFixed(2)}</span>
-        </div>
+      <div className="total-amount-display">
+        <span className="label">Total Amount:</span>
+        <span className="amount">${calculateTotal().toFixed(2)}</span>
       </div>
     </div>
   );

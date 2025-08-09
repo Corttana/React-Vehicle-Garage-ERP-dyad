@@ -20,7 +20,7 @@ const ServiceReceptionPage = () => {
 
   return (
     <ErpLayout>
-      <div className="erp-container bg-transparent p-0">
+      <div className="erp-container">
         {view === 'list' ? (
           <ServiceReceptionList onAddNew={() => handleShowForm()} onEdit={handleShowForm} />
         ) : (
