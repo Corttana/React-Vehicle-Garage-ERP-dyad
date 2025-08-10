@@ -1,5 +1,5 @@
-import { serviceReceptions, jobTypes, selectedJobTypesByDocCode, vehicleChecklists, serviceDetails, receptionRemarks } from './mockData';
-import { ServiceReception, JobType, SelectedJobType, ServiceReceptionCreationPayload } from './types';
+import { serviceReceptions, jobTypes, selectedJobTypesByDocCode, checklistMasterItems, selectedChecklistsByDocCode, serviceDetails, receptionRemarks } from './mockData';
+import { ServiceReception, JobType, SelectedJobType, ServiceReceptionCreationPayload, ChecklistMasterItem, SelectedChecklistItem } from './types';
 
 const SIMULATED_DELAY = 500;
 
@@ -12,6 +12,14 @@ export const getJobTypes = (): Promise<JobType[]> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(jobTypes.filter(jt => jt.active === 'Y'));
+    }, SIMULATED_DELAY);
+  });
+};
+
+export const getChecklistItems = (): Promise<ChecklistMasterItem[]> => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(checklistMasterItems.filter(item => item.active === 'Y'));
     }, SIMULATED_DELAY);
   });
 };
@@ -30,7 +38,7 @@ export const getServiceReceptionByDocCode = (docCode: string): Promise<ServiceRe
       const reception = serviceReceptions.find(r => r.docCode === docCode);
       if (reception) {
         const jobs = selectedJobTypesByDocCode[docCode] || [];
-        const checklist = vehicleChecklists[docCode] || [];
+        const checklist = selectedChecklistsByDocCode[docCode] || [];
         const details = serviceDetails[docCode] || [];
         const remarks = receptionRemarks[docCode] || [];
         resolve({ ...reception, jobTypes: jobs, vehicleChecklist: checklist, serviceDetails: details, receptionRemarks: remarks });
@@ -44,7 +52,7 @@ export const getServiceReceptionByDocCode = (docCode: string): Promise<ServiceRe
 export const createServiceReception = (data: ServiceReceptionCreationPayload): Promise<ServiceReception> => {
   return new Promise(resolve => {
     setTimeout(() => {
-      const { jobTypes: jobTypesFromForm, ...restOfData } = data;
+      const { jobTypes: jobTypesFromForm, vehicleChecklist: checklistFromForm, ...restOfData } = data;
       const newReception: ServiceReception = {
         ...restOfData,
         docCode: getNextDocCode(),
@@ -61,9 +69,16 @@ export const createServiceReception = (data: ServiceReceptionCreationPayload): P
         selectedJobTypesByDocCode[newReception.docCode] = jobsWithTranNo;
       }
       
-      if (data.vehicleChecklist) {
-        vehicleChecklists[newReception.docCode] = data.vehicleChecklist;
+      if (checklistFromForm) {
+        const checklistWithTranNo: SelectedChecklistItem[] = checklistFromForm.map((item, index) => ({
+          itemId: item.itemId,
+          isChecked: item.isChecked,
+          remarks: item.remarks,
+          tranNo: index + 1,
+        }));
+        selectedChecklistsByDocCode[newReception.docCode] = checklistWithTranNo;
       }
+
       if (data.serviceDetails) {
         serviceDetails[newReception.docCode] = data.serviceDetails;
       }
@@ -80,21 +95,28 @@ export const updateServiceReception = (docCode: string, data: Partial<ServiceRec
     setTimeout(() => {
       const index = serviceReceptions.findIndex(r => r.docCode === docCode);
       if (index !== -1) {
-        const { jobTypes: jobTypesFromForm, ...restOfData } = data;
+        const { jobTypes: jobTypesFromForm, vehicleChecklist: checklistFromForm, ...restOfData } = data;
         serviceReceptions[index] = { ...serviceReceptions[index], ...restOfData as ServiceReception };
 
         if (jobTypesFromForm) {
           const jobsWithTranNo: SelectedJobType[] = jobTypesFromForm.map((job, index) => ({
             jobId: job.jobId,
             remarks: job.remarks,
-            tranNo: index + 1,
+            tranNo: job.tranNo || index + 1,
           }));
           selectedJobTypesByDocCode[docCode] = jobsWithTranNo;
         }
 
-        if (data.vehicleChecklist) {
-            vehicleChecklists[docCode] = data.vehicleChecklist;
+        if (checklistFromForm) {
+          const checklistWithTranNo: SelectedChecklistItem[] = checklistFromForm.map((item, index) => ({
+            itemId: item.itemId,
+            isChecked: item.isChecked,
+            remarks: item.remarks,
+            tranNo: item.tranNo || index + 1,
+          }));
+          selectedChecklistsByDocCode[docCode] = checklistWithTranNo;
         }
+
         if (data.serviceDetails) {
             serviceDetails[docCode] = data.serviceDetails;
         }
@@ -116,7 +138,7 @@ export const deleteServiceReception = (docCode: string): Promise<boolean> => {
       if (index !== -1) {
         serviceReceptions.splice(index, 1);
         delete selectedJobTypesByDocCode[docCode];
-        delete vehicleChecklists[docCode];
+        delete selectedChecklistsByDocCode[docCode];
         delete serviceDetails[docCode];
         delete receptionRemarks[docCode];
         resolve(true);

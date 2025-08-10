@@ -1,4 +1,4 @@
-import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem, ServiceDetail, ServiceReceptionRemark, SelectedJobType } from './types';
+import { ServiceReception, JobType, SelectedJobType, ServiceDetail, ServiceReceptionRemark, ChecklistMasterItem, SelectedChecklistItem } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { docCode: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },
@@ -28,29 +28,30 @@ export let selectedJobTypesByDocCode: { [docCode: string]: SelectedJobType[] } =
   ],
 };
 
-export const checklistMaster: { id: number; name: string }[] = [
-  { id: 1, name: 'Headlights & Taillights' },
-  { id: 2, name: 'Turn Signals & Hazards' },
-  { id: 3, name: 'Wipers & Washer Fluid' },
-  { id: 4, name: 'Tire Condition & Pressure' },
-  { id: 5, name: 'Engine Oil Level' },
-  { id: 6, name: 'Brake Fluid Level' },
-  { id: 7, name: 'Coolant Level' },
-  { id: 8, name: 'Horn' },
-  { id: 9, name: 'AC Cooling Performance' },
-  { id: 10, name: 'Interior Lights & Controls' },
-  { id: 11, name: 'Any visible scratches/dents' },
-  { id: 12, name: 'Spare Tire & Tools' },
+export const checklistMasterItems: ChecklistMasterItem[] = [
+  { itemId: 1, itemName: 'Headlights & Taillights', active: 'Y' },
+  { itemId: 2, itemName: 'Turn Signals & Hazards', active: 'Y' },
+  { itemId: 3, itemName: 'Wipers & Washer Fluid', active: 'Y' },
+  { itemId: 4, itemName: 'Tire Condition & Pressure', active: 'Y' },
+  { itemId: 5, itemName: 'Engine Oil Level', active: 'Y' },
+  { itemId: 6, itemName: 'Brake Fluid Level', active: 'Y' },
+  { itemId: 7, itemName: 'Coolant Level', active: 'Y' },
+  { itemId: 8, itemName: 'Horn', active: 'Y' },
+  { itemId: 9, itemName: 'AC Cooling Performance', active: 'Y' },
+  { itemId: 10, itemName: 'Interior Lights & Controls', active: 'Y' },
+  { itemId: 11, itemName: 'Any visible scratches/dents', active: 'Y' },
+  { itemId: 12, itemName: 'Spare Tire & Tools', active: 'Y' },
+  { itemId: 13, itemName: 'Radio', active: 'N' }, // Inactive example
 ];
 
-export let vehicleChecklists: { [docCode: string]: VehicleChecklistItem[] } = {
+export let selectedChecklistsByDocCode: { [docCode: string]: SelectedChecklistItem[] } = {
   'SR-001': [
-    { id: 1, name: 'Headlights & Taillights', status: 'OK', remarks: '' },
-    { id: 4, name: 'Tire Condition & Pressure', status: 'Not OK', remarks: 'Front left tire is low' },
-    { id: 11, name: 'Any visible scratches/dents', status: 'OK', remarks: 'Minor scratch on rear bumper' },
+    { tranNo: 1, itemId: 1, isChecked: 'Y', remarks: '' },
+    { tranNo: 2, itemId: 4, isChecked: 'N', remarks: 'Front left tire is low' },
+    { tranNo: 3, itemId: 11, isChecked: 'Y', remarks: 'Minor scratch on rear bumper' },
   ],
   'SR-002': [
-     { id: 9, name: 'AC Cooling Performance', status: 'Not OK', remarks: 'Not cooling at all' },
+     { tranNo: 1, itemId: 9, isChecked: 'N', remarks: 'Not cooling at all' },
   ]
 };
 

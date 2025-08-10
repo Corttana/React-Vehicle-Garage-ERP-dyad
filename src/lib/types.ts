@@ -18,7 +18,7 @@ export interface ServiceReception {
   serviceDetails?: ServiceDetail[];
   receptionRemarks?: ServiceReceptionRemark[];
   jobTypes?: SelectedJobType[];
-  vehicleChecklist?: VehicleChecklistItem[];
+  vehicleChecklist?: SelectedChecklistItem[];
 }
 
 export interface ServiceDetail {
@@ -46,26 +46,38 @@ export interface JobType {
   active: 'Y' | 'N';
 }
 
-// Represents the data structure for the form state
 export interface CustomerJobType {
   jobId: number;
   remarks: string;
 }
 
-// Represents the data structure in the "database" (WO_CUST_JOBTYPE)
 export interface SelectedJobType extends CustomerJobType {
   tranNo: number;
 }
 
+export interface ChecklistMasterItem {
+  itemId: number;
+  itemName: string;
+  active: 'Y' | 'N';
+}
 
-export interface VehicleChecklistItem {
-  id: number;
-  name: string;
-  status: 'OK' | 'Not OK';
+export interface SelectedChecklistItem {
+  tranNo: number;
+  itemId: number;
+  isChecked: 'Y' | 'N';
   remarks: string;
 }
 
-// This is the type for the payload sent from the form to the API
-export type ServiceReceptionCreationPayload = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'jobTypes'> & {
+// Type for the form's state, combining master and selected data
+export type VehicleChecklistItemState = {
+  itemId: number;
+  itemName: string;
+  isChecked: 'Y' | 'N';
+  remarks: string;
+  tranNo?: number;
+};
+
+export type ServiceReceptionCreationPayload = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'jobTypes' | 'vehicleChecklist'> & {
   jobTypes?: (CustomerJobType & { tranNo?: number })[];
+  vehicleChecklist?: VehicleChecklistItemState[];
 };

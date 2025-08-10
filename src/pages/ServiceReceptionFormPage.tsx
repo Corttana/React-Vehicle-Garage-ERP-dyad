@@ -14,9 +14,8 @@ import VehicleRegistrationModal from '@/components/service-reception/VehicleRegi
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import VehicleChecklist from '@/components/service-reception/VehicleChecklist';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
-import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes } from '@/lib/api';
-import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItem } from '@/lib/types';
-import { checklistMaster } from '@/lib/mockData';
+import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes, getChecklistItems } from '@/lib/api';
+import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItemState } from '@/lib/types';
 import JobTypeSelection from '@/components/service-reception/JobTypeSelection';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
@@ -54,81 +53,68 @@ const ServiceReceptionFormPage = () => {
   const [allJobTypes, setAllJobTypes] = useState<JobType[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<(CustomerJobType & { tranNo?: number })[]>([]);
   
-  const [vehicleChecklist, setVehicleChecklist] = useState<VehicleChecklistItem[]>([]);
+  const [vehicleChecklist, setVehicleChecklist] = useState<VehicleChecklistItemState[]>([]);
 
   useEffect(() => {
-    const fetchJobTypes = async () => {
-      const data = await getJobTypes();
-      setAllJobTypes(data);
-    };
-    fetchJobTypes();
+    const fetchAndInitialize = async () => {
+      const masterChecklistItems = await getChecklistItems();
+      const jobTypesData = await getJobTypes();
+      setAllJobTypes(jobTypesData);
 
-    const initializeChecklist = () => {
-      setVehicleChecklist(checklistMaster.map(item => ({
-        id: item.id,
-        name: item.name,
-        status: 'Not OK',
-        remarks: ''
-      })));
-    };
-
-    if (docCode) {
-      setIsEditMode(true);
-      const fetchReception = async () => {
+      if (docCode) {
+        setIsEditMode(true);
         const data = await getServiceReceptionByDocCode(docCode);
         if (data) {
           const { 
-            docCode: _dc, 
-            totalAmount: _ta, 
-            serviceDetails: loadedServiceDetails, 
-            receptionRemarks: loadedReceptionRemarks, 
-            jobTypes: loadedJobTypes, 
-            vehicleChecklist: loadedChecklist, 
-            ...formDataToSet 
+            docCode: _dc, totalAmount: _ta, serviceDetails: loadedDetails, 
+            receptionRemarks: loadedRemarks, jobTypes: loadedJobs, 
+            vehicleChecklist: loadedChecklist, ...formDataToSet 
           } = data;
           
           setFormData(formDataToSet);
           
-          if (loadedServiceDetails) {
-            setServiceDetails(loadedServiceDetails);
-            const maxId = loadedServiceDetails.reduce((max, d) => Math.max(max, d.id), 0);
-            setNextDetailId(maxId + 1);
+          if (loadedDetails) {
+            setServiceDetails(loadedDetails);
+            setNextDetailId(loadedDetails.reduce((max, d) => Math.max(max, d.id), 0) + 1);
           }
           
-          if (loadedReceptionRemarks) {
-            setReceptionRemarks(loadedReceptionRemarks);
-            const maxId = loadedReceptionRemarks.reduce((max, r) => Math.max(max, r.id), 0);
-            setNextRemarkId(maxId + 1);
+          if (loadedRemarks) {
+            setReceptionRemarks(loadedRemarks);
+            setNextRemarkId(loadedRemarks.reduce((max, r) => Math.max(max, r.id), 0) + 1);
           }
 
-          if (loadedJobTypes) {
-            setSelectedJobTypes(loadedJobTypes);
+          if (loadedJobs) {
+            setSelectedJobTypes(loadedJobs);
           }
           
-          if (loadedChecklist && loadedChecklist.length > 0) {
-            const fullChecklist: VehicleChecklistItem[] = checklistMaster.map(masterItem => {
-              const existingItem = loadedChecklist.find(i => i.id === masterItem.id);
-              if (existingItem) {
-                // Coerce old 'N/A' status to 'Not OK' for compatibility
-                const status = (existingItem.status as any) === 'N/A' ? 'Not OK' : existingItem.status;
-                return { ...existingItem, status };
-              }
-              // For master items not in the loaded checklist, create a new one
-              return { id: masterItem.id, name: masterItem.name, status: 'Not OK', remarks: '' };
-            });
-            setVehicleChecklist(fullChecklist);
-          } else {
-            initializeChecklist();
-          }
+          const fullChecklist: VehicleChecklistItemState[] = masterChecklistItems.map(masterItem => {
+            const existingItem = loadedChecklist?.find(i => i.itemId === masterItem.itemId);
+            return {
+              itemId: masterItem.itemId,
+              itemName: masterItem.itemName,
+              isChecked: existingItem?.isChecked || 'N',
+              remarks: existingItem?.remarks || '',
+              tranNo: existingItem?.tranNo,
+            };
+          });
+          setVehicleChecklist(fullChecklist);
+
         } else {
           showError('Service reception not found.');
           navigate('/service-reception');
         }
-      };
-      fetchReception();
-    } else {
-      initializeChecklist();
-    }
+      } else {
+        // New form: initialize checklist from master
+        setVehicleChecklist(masterChecklistItems.map(item => ({
+          itemId: item.itemId,
+          itemName: item.itemName,
+          isChecked: 'N',
+          remarks: ''
+        })));
+      }
+    };
+
+    fetchAndInitialize();
   }, [docCode, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -226,9 +212,9 @@ const ServiceReceptionFormPage = () => {
     setSelectedJobTypes(prev => prev.map(jt => jt.jobId === jobId ? { ...jt, remarks } : jt));
   };
 
-  const handleChecklistItemChange = (id: number, updatedItem: Partial<VehicleChecklistItem>) => {
+  const handleChecklistItemChange = (itemId: number, updatedItem: Partial<VehicleChecklistItemState>) => {
     setVehicleChecklist(prev =>
-      prev.map(item => (item.id === id ? { ...item, ...updatedItem } : item))
+      prev.map(item => (item.itemId === itemId ? { ...item, ...updatedItem } : item))
     );
   };
 
