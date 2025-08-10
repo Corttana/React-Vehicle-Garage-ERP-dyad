@@ -102,7 +102,7 @@ const ServiceReceptionFormPage = () => {
           }
 
           if (loadedJobTypes) {
-            setSelectedJobTypes(loadedJobTypes);
+            setSelectedJobTypes(loadedJobTypes.map(({ tranNo: _tn, ...rest }) => rest));
           }
           
           if (loadedChecklist && loadedChecklist.length > 0) {

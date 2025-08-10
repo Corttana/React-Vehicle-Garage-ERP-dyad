@@ -17,7 +17,7 @@ export interface ServiceReception {
   totalAmount: number;
   serviceDetails?: ServiceDetail[];
   receptionRemarks?: ServiceReceptionRemark[];
-  jobTypes?: CustomerJobType[];
+  jobTypes?: SelectedJobType[];
   vehicleChecklist?: VehicleChecklistItem[];
 }
 
@@ -46,10 +46,17 @@ export interface JobType {
   active: 'Y' | 'N';
 }
 
+// Represents the data structure for the form state
 export interface CustomerJobType {
   jobId: number;
   remarks: string;
 }
+
+// Represents the data structure in the "database" (WO_CUST_JOBTYPE)
+export interface SelectedJobType extends CustomerJobType {
+  tranNo: number;
+}
+
 
 export interface VehicleChecklistItem {
   id: number;
@@ -57,3 +64,8 @@ export interface VehicleChecklistItem {
   status: 'OK' | 'Not OK';
   remarks: string;
 }
+
+// This is the type for the payload sent from the form to the API
+export type ServiceReceptionCreationPayload = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'jobTypes'> & {
+  jobTypes?: CustomerJobType[];
+};

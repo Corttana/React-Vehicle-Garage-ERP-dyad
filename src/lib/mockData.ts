@@ -1,4 +1,4 @@
-import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem, ServiceDetail, ServiceReceptionRemark } from './types';
+import { ServiceReception, JobType, CustomerJobType, VehicleChecklistItem, ServiceDetail, ServiceReceptionRemark, SelectedJobType } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { docCode: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },
@@ -18,13 +18,13 @@ export let jobTypes: JobType[] = [
   { jobId: 7, jobTypeName: 'Tire Replacement', active: 'N' }, // Inactive example
 ];
 
-export let customerJobTypes: { [docCode: string]: CustomerJobType[] } = {
+export let selectedJobTypesByDocCode: { [docCode: string]: SelectedJobType[] } = {
   'SR-001': [
-    { jobId: 1, remarks: 'Full synthetic oil requested.' },
-    { jobId: 3, remarks: 'Check front brake pads only.' },
+    { tranNo: 1, jobId: 1, remarks: 'Full synthetic oil requested.' },
+    { tranNo: 2, jobId: 3, remarks: 'Check front brake pads only.' },
   ],
   'SR-002': [
-    { jobId: 4, remarks: 'AC not cooling effectively.' },
+    { tranNo: 1, jobId: 4, remarks: 'AC not cooling effectively.' },
   ],
 };
 
