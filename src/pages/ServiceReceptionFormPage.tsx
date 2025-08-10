@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useEffect, useMemo } from 'react';
+import React, { useState, FormEvent, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ErpLayout from '@/components/layout/ErpLayout';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,10 @@ import VehicleRegistrationModal from '@/components/service-reception/VehicleRegi
 import CustomerAccountModal from '@/components/service-reception/CustomerAccountModal';
 import VehicleChecklist from '@/components/service-reception/VehicleChecklist';
 import { showLoading, showSuccess, showError, dismissToast } from '@/utils/toast';
-import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes, getChecklistItems } from '@/lib/api';
+import { getServiceReceptionByDocCode, createServiceReception, updateServiceReception, getJobTypes, getChecklistItems, deleteServiceReception } from '@/lib/api';
 import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItemState } from '@/lib/types';
 import JobTypeSelection from '@/components/service-reception/JobTypeSelection';
+import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
@@ -31,6 +32,7 @@ const ServiceReceptionFormPage = () => {
   const { docCode } = useParams<{ docCode: string }>();
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -116,6 +118,59 @@ const ServiceReceptionFormPage = () => {
 
     fetchAndInitialize();
   }, [docCode, navigate]);
+
+  const handleDelete = useCallback(() => {
+    if (!isEditMode || !docCode) return;
+    setIsDeleteDialogOpen(true);
+  }, [isEditMode, docCode]);
+
+  const handleConfirmDelete = async () => {
+    if (!docCode) return;
+    const toastId = showLoading('Deleting record...');
+    const success = await deleteServiceReception(docCode);
+    dismissToast(toastId);
+    if (success) {
+      showSuccess('Record deleted successfully.');
+      navigate('/service-reception');
+    } else {
+      showError('Failed to delete record.');
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('customerVehicleForm')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        handleDelete();
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        navigate('/service-reception');
+      }
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('erpDetailForm')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+      if (e.altKey) {
+        switch (e.key) {
+          case '1': e.preventDefault(); setActiveTab('customer'); break;
+          case '2': e.preventDefault(); setActiveTab('job-type'); break;
+          case '3': e.preventDefault(); setActiveTab('vehicle-checklist'); break;
+          case '4': e.preventDefault(); setActiveTab('checklist-images'); break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigate, handleDelete]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -230,7 +285,7 @@ const ServiceReceptionFormPage = () => {
           </div>
           <div className="form-header-actions">
             <Button type="submit" form="customerVehicleForm" className="btn btn-success" title="Save (Ctrl+S)"><Check className="h-4 w-4" /> Save</Button>
-            <Button type="button" className="btn btn-danger" title="Delete (Ctrl+D)" disabled={!isEditMode}><Trash2 className="h-4 w-4" /> Delete</Button>
+            <Button type="button" className="btn btn-danger" title="Delete (Ctrl+D)" disabled={!isEditMode} onClick={handleDelete}><Trash2 className="h-4 w-4" /> Delete</Button>
             <Button type="button" className="btn btn-warning" title="Cancel (Esc)" onClick={() => navigate('/service-reception')}><X className="h-4 w-4" /> Cancel</Button>
           </div>
         </div>
@@ -309,6 +364,13 @@ const ServiceReceptionFormPage = () => {
       </div>
       <VehicleRegistrationModal isOpen={isVehicleModalOpen} onClose={() => setVehicleModalOpen(false)} />
       <CustomerAccountModal isOpen={isCustomerModalOpen} onClose={() => setCustomerModalOpen(false)} />
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Are you sure?"
+        description="This action cannot be undone. This will permanently delete this service reception record."
+      />
     </ErpLayout>
   );
 };
