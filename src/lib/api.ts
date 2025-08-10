@@ -173,7 +173,7 @@ export const uploadChecklistImage = (docCode: string, file: File): Promise<Check
         imageId: newImageId,
         docCode,
         fileName: file.name,
-        filePath: `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(file.name)}`,
+        filePath: `uploads/images/${newImageId}-${file.name}`,
         uploadedOn: new Date().toISOString(),
       };
       checklistImagesByDocCode[docCode].push(newImage);
