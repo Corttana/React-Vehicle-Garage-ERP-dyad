@@ -85,6 +85,7 @@ html, body, #root {
   display: flex;
   height: 100vh;
   transition: padding-left 0.3s ease-in-out;
+  overflow-x: hidden; /* Prevent horizontal scroll on the main wrapper */
 }
 
 /* --- Sidebar Styles --- */
@@ -253,6 +254,7 @@ html, body, #root {
   overflow: hidden;
   padding-left: var(--sidebar-width);
   transition: padding-left 0.3s ease-in-out;
+  width: 100%; /* Ensure container does not overflow */
 }
 .app-wrapper.sidebar-collapsed .main-container {
   padding-left: var(--sidebar-collapsed-width);
@@ -685,6 +687,20 @@ button.action-btn:hover { color: #084a8a; }
     table.erp-table th, table.erp-table td {
         font-size: 11px;
         white-space: normal; /* Allow text to wrap */
+    }
+    /* --- Responsive Tabs --- */
+    #erp-tabs [role="tablist"] {
+        overflow-x: auto;
+        white-space: nowrap;
+        /* Hide scrollbar for a cleaner look, but still allow scrolling */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    #erp-tabs [role="tablist"]::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    #erp-tabs [role="tab"] {
+        flex-shrink: 0; /* Prevent tabs from shrinking */
     }
 }
 
