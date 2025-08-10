@@ -244,6 +244,7 @@ const ServiceReceptionFormPage = () => {
     } else {
       setServiceDetails(details => [...details, { ...detailInput, id: nextDetailId, amount: detailInput.qty * detailInput.rate }]);
       setNextDetailId(id => id + 1);
+      setTimeout(() => document.getElementById('itemcode')?.focus(), 0);
     }
     setDetailInput(initialDetailState);
     setEditingDetailId(null);
@@ -272,6 +273,7 @@ const ServiceReceptionFormPage = () => {
     setReceptionRemarks(prev => [...prev, { id: nextRemarkId, slNo: prev.length + 1, remarks: remarkInput.trim() }]);
     setNextRemarkId(id => id + 1);
     setRemarkInput('');
+    setTimeout(() => document.getElementById('receptionRemarkInput')?.focus(), 0);
   };
 
   const handleDeleteRemark = (id: number) => {
