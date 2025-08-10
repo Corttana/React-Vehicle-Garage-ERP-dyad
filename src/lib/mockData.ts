@@ -71,7 +71,7 @@ export let receptionRemarks: { [docCode: string]: ServiceReceptionRemark[] } = {
 
 export let checklistImagesByDocCode: { [docCode: string]: ChecklistImage[] } = {
   'SR-001': [
-    { imageId: 1, docCode: 'SR-001', fileName: 'dent_bumper.jpg', filePath: 'uploads/images/1-dent_bumper.jpg', uploadedOn: new Date().toISOString() },
-    { imageId: 2, docCode: 'SR-001', fileName: 'low_tire.jpg', filePath: 'uploads/images/2-low_tire.jpg', uploadedOn: new Date().toISOString() },
+    { imageId: 1, docCode: 'SR-001', fileName: 'dent_bumper.jpg', filePath: 'https://placehold.co/600x400/EEE/31343C?text=Bumper+Dent', uploadedOn: new Date().toISOString() },
+    { imageId: 2, docCode: 'SR-001', fileName: 'low_tire.jpg', filePath: 'https://placehold.co/600x400/EEE/31343C?text=Low+Tire', uploadedOn: new Date().toISOString() },
   ]
 };
