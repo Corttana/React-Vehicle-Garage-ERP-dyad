@@ -1,5 +1,5 @@
-import { serviceReceptions, jobTypes, selectedJobTypesByDocCode, checklistMasterItems, selectedChecklistsByDocCode, serviceDetails, receptionRemarks } from './mockData';
-import { ServiceReception, JobType, SelectedJobType, ServiceReceptionCreationPayload, ChecklistMasterItem, SelectedChecklistItem } from './types';
+import { serviceReceptions, jobTypes, selectedJobTypesByDocCode, checklistMasterItems, selectedChecklistsByDocCode, serviceDetails, receptionRemarks, checklistImagesByDocCode } from './mockData';
+import { ServiceReception, JobType, SelectedJobType, ServiceReceptionCreationPayload, ChecklistMasterItem, SelectedChecklistItem, ChecklistImage } from './types';
 
 const SIMULATED_DELAY = 500;
 
@@ -141,10 +141,59 @@ export const deleteServiceReception = (docCode: string): Promise<boolean> => {
         delete selectedChecklistsByDocCode[docCode];
         delete serviceDetails[docCode];
         delete receptionRemarks[docCode];
+        delete checklistImagesByDocCode[docCode];
         resolve(true);
       } else {
         resolve(false);
       }
+    }, SIMULATED_DELAY);
+  });
+};
+
+// --- Checklist Image API ---
+
+export const getChecklistImages = (docCode: string): Promise<ChecklistImage[]> => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(checklistImagesByDocCode[docCode] || []);
+    }, SIMULATED_DELAY);
+  });
+};
+
+export const uploadChecklistImage = (docCode: string, file: File): Promise<ChecklistImage> => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (!checklistImagesByDocCode[docCode]) {
+        checklistImagesByDocCode[docCode] = [];
+      }
+      const allImageIds = Object.values(checklistImagesByDocCode).flat().map(i => i.imageId);
+      const newImageId = allImageIds.length > 0 ? Math.max(...allImageIds) + 1 : 1;
+      
+      const newImage: ChecklistImage = {
+        imageId: newImageId,
+        docCode,
+        fileName: file.name,
+        filePath: `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(file.name)}`,
+        uploadedOn: new Date().toISOString(),
+      };
+      checklistImagesByDocCode[docCode].push(newImage);
+      resolve(newImage);
+    }, SIMULATED_DELAY * 2); // Slower delay for upload
+  });
+};
+
+export const deleteChecklistImage = (imageId: number): Promise<boolean> => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      for (const docCode in checklistImagesByDocCode) {
+        const index = checklistImagesByDocCode[docCode].findIndex(img => img.imageId === imageId);
+        if (index !== -1) {
+          checklistImagesByDocCode[docCode].splice(index, 1);
+          resolve(true);
+          return;
+        }
+      }
+      resolve(false);
     }, SIMULATED_DELAY);
   });
 };

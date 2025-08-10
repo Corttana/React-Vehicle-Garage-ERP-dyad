@@ -1,4 +1,4 @@
-import { ServiceReception, JobType, SelectedJobType, ServiceDetail, ServiceReceptionRemark, ChecklistMasterItem, SelectedChecklistItem } from './types';
+import { ServiceReception, JobType, SelectedJobType, ServiceDetail, ServiceReceptionRemark, ChecklistMasterItem, SelectedChecklistItem, ChecklistImage } from './types';
 
 export let serviceReceptions: ServiceReception[] = [
   { docCode: 'SR-001', docDate: '2023-10-26', vehicleNo: 'V-1234', customerName: 'John Doe', status: 'Completed', mobileNo: '555-0101', address: '123 Oak St', building: 'A', zone: '1', street: 'Main', vehicleAccount: 'CUST-001', vino: 'VIN123', odometerReading: '50000', broughtBy: 'Owner', carWash: 'Y', totalAmount: 250.00 },
@@ -66,5 +66,12 @@ export let receptionRemarks: { [docCode: string]: ServiceReceptionRemark[] } = {
   'SR-001': [
     { id: 1, slNo: 1, remarks: 'Customer is waiting for the vehicle.' },
     { id: 2, slNo: 2, remarks: 'Please check for any software updates.' },
+  ]
+};
+
+export let checklistImagesByDocCode: { [docCode: string]: ChecklistImage[] } = {
+  'SR-001': [
+    { imageId: 1, docCode: 'SR-001', fileName: 'dent_bumper.jpg', filePath: 'https://placehold.co/600x400/EEE/31343C?text=Bumper+Dent', uploadedOn: new Date().toISOString() },
+    { imageId: 2, docCode: 'SR-001', fileName: 'low_tire.jpg', filePath: 'https://placehold.co/600x400/EEE/31343C?text=Low+Tire', uploadedOn: new Date().toISOString() },
   ]
 };

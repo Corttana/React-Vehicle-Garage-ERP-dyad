@@ -19,6 +19,7 @@ import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, Custo
 import JobTypeSelection from '@/components/service-reception/JobTypeSelection';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 import SaveConfirmationDialog from '@/components/service-reception/SaveConfirmationDialog';
+import ChecklistImageUpload from '@/components/service-reception/ChecklistImageUpload';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
@@ -214,14 +215,21 @@ const ServiceReceptionFormPage = () => {
     const payload = { ...formData, serviceDetails, receptionRemarks, jobTypes: selectedJobTypes, vehicleChecklist };
 
     try {
+      let savedReception;
       if (isEditMode && docCode) {
-        await updateServiceReception(docCode, payload);
+        savedReception = await updateServiceReception(docCode, payload);
       } else {
-        await createServiceReception(payload);
+        savedReception = await createServiceReception(payload);
       }
       dismissToast(toastId);
       showSuccess(`Service reception ${isEditMode ? 'updated' : 'created'} successfully!`);
-      navigate('/service-reception');
+      
+      if (savedReception && !isEditMode) {
+        navigate(`/service-reception/edit/${savedReception.docCode}`, { replace: true });
+        setActiveTab('checklist-images');
+      } else {
+        navigate('/service-reception');
+      }
     } catch (error) {
       dismissToast(toastId);
       showError('An error occurred.');
@@ -382,7 +390,7 @@ const ServiceReceptionFormPage = () => {
           </TabsContent>
 
           <TabsContent value="checklist-images">
-            <div className="p-4 text-center text-muted-foreground">Check List Images content will go here.</div>
+            <ChecklistImageUpload docCode={docCode} isEditMode={isEditMode} />
           </TabsContent>
 
         </Tabs>

@@ -81,3 +81,11 @@ export type ServiceReceptionCreationPayload = Omit<ServiceReception, 'docCode' |
   jobTypes?: (CustomerJobType & { tranNo?: number })[];
   vehicleChecklist?: VehicleChecklistItemState[];
 };
+
+export interface ChecklistImage {
+  imageId: number;
+  docCode: string;
+  fileName: string;
+  filePath: string; // In a real app, this would be a URL to the stored image
+  uploadedOn: string;
+}
