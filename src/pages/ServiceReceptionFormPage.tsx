@@ -18,6 +18,7 @@ import { getServiceReceptionByDocCode, createServiceReception, updateServiceRece
 import { ServiceReception, ServiceDetail, ServiceReceptionRemark, JobType, CustomerJobType, VehicleChecklistItemState } from '@/lib/types';
 import JobTypeSelection from '@/components/service-reception/JobTypeSelection';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
+import SaveConfirmationDialog from '@/components/service-reception/SaveConfirmationDialog';
 
 type FormData = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'serviceDetails' | 'receptionRemarks' | 'jobTypes' | 'vehicleChecklist'>;
 type DetailFormData = Omit<ServiceDetail, 'id' | 'amount'>;
@@ -33,6 +34,7 @@ const ServiceReceptionFormPage = () => {
   const [isVehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -162,6 +164,14 @@ const ServiceReceptionFormPage = () => {
           case '2': e.preventDefault(); setActiveTab('job-type'); break;
           case '3': e.preventDefault(); setActiveTab('vehicle-checklist'); break;
           case '4': e.preventDefault(); setActiveTab('checklist-images'); break;
+          case 'i':
+            e.preventDefault();
+            document.getElementById('itemcode')?.focus();
+            break;
+          case 'r':
+            e.preventDefault();
+            document.getElementById('remarks')?.focus();
+            break;
         }
       }
     };
@@ -185,8 +195,13 @@ const ServiceReceptionFormPage = () => {
     setFormData(prev => ({ ...prev, carWash: checked === true ? 'Y' : 'N' }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setIsSaveConfirmOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setIsSaveConfirmOpen(false);
     const toastId = showLoading(isEditMode ? 'Updating record...' : 'Creating record...');
     const payload = { ...formData, serviceDetails, receptionRemarks, jobTypes: selectedJobTypes, vehicleChecklist };
 
@@ -364,6 +379,13 @@ const ServiceReceptionFormPage = () => {
       </div>
       <VehicleRegistrationModal isOpen={isVehicleModalOpen} onClose={() => setVehicleModalOpen(false)} />
       <CustomerAccountModal isOpen={isCustomerModalOpen} onClose={() => setCustomerModalOpen(false)} />
+      <SaveConfirmationDialog
+        isOpen={isSaveConfirmOpen}
+        onClose={() => setIsSaveConfirmOpen(false)}
+        onConfirm={handleConfirmSave}
+        data={{ ...formData, jobTypes: selectedJobTypes, vehicleChecklist }}
+        serviceDetails={serviceDetails}
+      />
       <ConfirmationDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
