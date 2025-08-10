@@ -121,7 +121,7 @@ const ChecklistImageUpload = ({ docCode, isEditMode }: ChecklistImageUploadProps
             <Dialog key={image.imageId}>
               <Card className="group relative overflow-hidden">
                 <DialogTrigger asChild>
-                  <AspectRatio ratio={1 / 1} className="cursor-pointer">
+                  <AspectRatio ratio={1 / 1} className="cursor-pointer bg-muted">
                     <img src={image.filePath} alt={image.fileName} className="object-cover w-full h-full transition-transform group-hover:scale-105" />
                   </AspectRatio>
                 </DialogTrigger>
