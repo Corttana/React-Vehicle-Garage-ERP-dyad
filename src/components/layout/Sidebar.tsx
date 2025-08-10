@@ -75,7 +75,7 @@ const Sidebar = ({ isCollapsed, navItems }: SidebarProps) => {
     <aside className="app-sidebar" id="app-sidebar">
       <div className="sidebar-header">
         <Cuboid className="h-8 w-8" />
-        <span>Elixir ERP</span>
+        <span>eZe ERP</span>
       </div>
       <ul className="sidebar-nav" id="sidebar-nav">
         <SidebarMenu items={navItems} isCollapsed={isCollapsed} />
