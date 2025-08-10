@@ -170,7 +170,7 @@ const ServiceReceptionFormPage = () => {
             break;
           case 'r':
             e.preventDefault();
-            document.getElementById('remarks')?.focus();
+            document.getElementById('receptionRemarkInput')?.focus();
             break;
         }
       }
