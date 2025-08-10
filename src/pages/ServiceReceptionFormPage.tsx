@@ -159,7 +159,7 @@ const ServiceReceptionFormPage = () => {
         document.getElementById('erpDetailForm')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
       if (e.altKey) {
-        switch (e.key) {
+        switch (e.key.toLowerCase()) {
           case '1': e.preventDefault(); setActiveTab('customer'); break;
           case '2': e.preventDefault(); setActiveTab('job-type'); break;
           case '3': e.preventDefault(); setActiveTab('vehicle-checklist'); break;
@@ -171,6 +171,14 @@ const ServiceReceptionFormPage = () => {
           case 'r':
             e.preventDefault();
             document.getElementById('receptionRemarkInput')?.focus();
+            break;
+          case 'e':
+            e.preventDefault();
+            (document.querySelector('[data-action="edit-detail"]') as HTMLElement)?.focus();
+            break;
+          case 'x':
+            e.preventDefault();
+            (document.querySelector('[data-action="delete-remark"]') as HTMLElement)?.focus();
             break;
         }
       }
@@ -346,13 +354,13 @@ const ServiceReceptionFormPage = () => {
                 <button type="submit" className="erp-add-btn" title={editingDetailId ? "Update Detail" : "Add Detail (Ctrl+Enter)"}>{editingDetailId ? <Check size={16}/> : <Plus size={16}/>}</button>
                 {editingDetailId && <button type="button" onClick={cancelEdit} className="erp-add-btn" style={{background: '#f0ad4e'}} title="Cancel Edit"><Ban size={16}/></button>}
               </form>
-              <div className="table-responsive-wrapper"><Table className="erp-table" id="tblServiceDetailsBody"><TableHeader><TableRow><TableHead>SL</TableHead><TableHead>Item Code</TableHead><TableHead>Description</TableHead><TableHead>Unit</TableHead><TableHead>Qty</TableHead><TableHead>Rate</TableHead><TableHead>Amount</TableHead><TableHead>Complaint</TableHead><TableHead>Scope</TableHead><TableHead>Remarks</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader><TableBody>{serviceDetails.map((detail, index) => (<TableRow key={detail.id}><TableCell>{index + 1}</TableCell><TableCell>{detail.itemcode}</TableCell><TableCell>{detail.description}</TableCell><TableCell>{detail.unit}</TableCell><TableCell>{detail.qty}</TableCell><TableCell>{detail.rate.toFixed(2)}</TableCell><TableCell>{detail.amount.toFixed(2)}</TableCell><TableCell>{detail.customer_complaint}</TableCell><TableCell>{detail.scope_of_work}</TableCell><TableCell>{detail.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" onClick={() => handleEditDetail(detail.id)}><FilePenLine size={14} /></button><button className="action-btn" onClick={() => handleDeleteDetail(detail.id)}><Trash2 size={14} /></button></TableCell></TableRow>))}</TableBody></Table></div>
+              <div className="table-responsive-wrapper"><Table className="erp-table" id="tblServiceDetailsBody"><TableHeader><TableRow><TableHead>SL</TableHead><TableHead>Item Code</TableHead><TableHead>Description</TableHead><TableHead>Unit</TableHead><TableHead>Qty</TableHead><TableHead>Rate</TableHead><TableHead>Amount</TableHead><TableHead>Complaint</TableHead><TableHead>Scope</TableHead><TableHead>Remarks</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader><TableBody>{serviceDetails.map((detail, index) => (<TableRow key={detail.id}><TableCell>{index + 1}</TableCell><TableCell>{detail.itemcode}</TableCell><TableCell>{detail.description}</TableCell><TableCell>{detail.unit}</TableCell><TableCell>{detail.qty}</TableCell><TableCell>{detail.rate.toFixed(2)}</TableCell><TableCell>{detail.amount.toFixed(2)}</TableCell><TableCell>{detail.customer_complaint}</TableCell><TableCell>{detail.scope_of_work}</TableCell><TableCell>{detail.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" data-action="edit-detail" onClick={() => handleEditDetail(detail.id)} title="Edit Detail (Alt+E for first row)"><FilePenLine size={14} /></button><button className="action-btn" onClick={() => handleDeleteDetail(detail.id)}><Trash2 size={14} /></button></TableCell></TableRow>))}</TableBody></Table></div>
               <div id="totalAmount" className="total-line">Total: <span>{totalAmount.toFixed(2)}</span></div>
             </div>
             <div id="reception-remarks-section" className="mt-6">
               <div className="erp-section-header">Reception Remarks</div>
               <div className="flex items-start gap-2 mb-4"><Textarea id="receptionRemarkInput" placeholder="Enter remarks..." className="erp-form-input flex-grow" value={remarkInput} onChange={(e) => setRemarkInput(e.target.value)} rows={2} /><Button type="button" onClick={handleAddRemark} className="btn btn-secondary h-auto">Add Remark</Button></div>
-              <div className="table-responsive-wrapper"><Table className="erp-table"><TableHeader><TableRow><TableHead style={{ width: '80px' }}>SL No.</TableHead><TableHead>Remarks</TableHead><TableHead style={{ width: '100px', textAlign: 'center' }}>Actions</TableHead></TableRow></TableHeader><TableBody>{receptionRemarks.map((remark) => (<TableRow key={remark.id}><TableCell>{remark.slNo}</TableCell><TableCell style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{remark.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" onClick={() => handleDeleteRemark(remark.id)} title="Delete Remark"><Trash2 size={14} /></button></TableCell></TableRow>))} {receptionRemarks.length === 0 && (<TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No remarks added yet.</TableCell></TableRow>)}</TableBody></Table></div>
+              <div className="table-responsive-wrapper"><Table className="erp-table"><TableHeader><TableRow><TableHead style={{ width: '80px' }}>SL No.</TableHead><TableHead>Remarks</TableHead><TableHead style={{ width: '100px', textAlign: 'center' }}>Actions</TableHead></TableRow></TableHeader><TableBody>{receptionRemarks.map((remark) => (<TableRow key={remark.id}><TableCell>{remark.slNo}</TableCell><TableCell style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{remark.remarks}</TableCell><TableCell className="action-cell"><button className="action-btn" data-action="delete-remark" onClick={() => handleDeleteRemark(remark.id)} title="Delete Remark (Alt+X for first row)"><Trash2 size={14} /></button></TableCell></TableRow>))} {receptionRemarks.length === 0 && (<TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No remarks added yet.</TableCell></TableRow>)}</TableBody></Table></div>
             </div>
           </TabsContent>
           

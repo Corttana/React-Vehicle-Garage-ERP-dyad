@@ -26,7 +26,7 @@ const Header = ({ onToggleSidebar, mainModules, activeModule, onModuleChange }: 
   return (
     <header className="app-header">
       <div className="header-left">
-        <button className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Toggle Sidebar">
+        <button id="sidebar-toggle-btn" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Toggle Sidebar (Alt+T)">
           <Menu className="h-6 w-6" />
         </button>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './Header.tsx';
 import Sidebar from './Sidebar.tsx';
 import { useIsMobile } from '../../hooks/use-mobile.tsx';
@@ -27,13 +27,27 @@ const ErpLayout = ({ children }: ErpLayoutProps) => {
     }
   }, [isMobile]);
 
-  const handleToggleSidebar = () => {
+  const handleToggleSidebar = useCallback(() => {
     if (isMobile) {
-      setIsMobileOpen(!isMobileOpen);
+      setIsMobileOpen(prev => !prev);
     } else {
-      setIsCollapsed(!isCollapsed);
+      setIsCollapsed(prev => !prev);
     }
-  };
+  }, [isMobile]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key.toLowerCase() === 't') {
+        event.preventDefault();
+        handleToggleSidebar();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleToggleSidebar]);
 
   const wrapperClasses = `app-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''} ${isMobileOpen ? 'sidebar-mobile-open' : ''}`;
 
