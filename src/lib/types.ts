@@ -2,7 +2,7 @@ export interface ServiceReception {
   docCode: string;
   docDate: string;
   vehicleNo: string;
-  customerName: string;
+  customerName:string;
   status: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
   mobileNo: string;
   address: string;
@@ -67,5 +67,5 @@ export interface VehicleChecklistItem {
 
 // This is the type for the payload sent from the form to the API
 export type ServiceReceptionCreationPayload = Omit<ServiceReception, 'docCode' | 'totalAmount' | 'jobTypes'> & {
-  jobTypes?: CustomerJobType[];
+  jobTypes?: (CustomerJobType & { tranNo?: number })[];
 };

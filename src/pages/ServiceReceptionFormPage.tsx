@@ -52,7 +52,7 @@ const ServiceReceptionFormPage = () => {
   const [nextRemarkId, setNextRemarkId] = useState(1);
 
   const [allJobTypes, setAllJobTypes] = useState<JobType[]>([]);
-  const [selectedJobTypes, setSelectedJobTypes] = useState<CustomerJobType[]>([]);
+  const [selectedJobTypes, setSelectedJobTypes] = useState<(CustomerJobType & { tranNo?: number })[]>([]);
   
   const [vehicleChecklist, setVehicleChecklist] = useState<VehicleChecklistItem[]>([]);
 
@@ -102,7 +102,7 @@ const ServiceReceptionFormPage = () => {
           }
 
           if (loadedJobTypes) {
-            setSelectedJobTypes(loadedJobTypes.map(({ tranNo: _tn, ...rest }) => rest));
+            setSelectedJobTypes(loadedJobTypes);
           }
           
           if (loadedChecklist && loadedChecklist.length > 0) {

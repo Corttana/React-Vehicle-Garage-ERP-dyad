@@ -1,5 +1,5 @@
 import { serviceReceptions, jobTypes, selectedJobTypesByDocCode, vehicleChecklists, serviceDetails, receptionRemarks } from './mockData';
-import { ServiceReception, JobType, CustomerJobType, SelectedJobType, ServiceReceptionCreationPayload } from './types';
+import { ServiceReception, JobType, SelectedJobType, ServiceReceptionCreationPayload } from './types';
 
 const SIMULATED_DELAY = 500;
 
@@ -54,7 +54,8 @@ export const createServiceReception = (data: ServiceReceptionCreationPayload): P
       
       if (jobTypesFromForm) {
         const jobsWithTranNo: SelectedJobType[] = jobTypesFromForm.map((job, index) => ({
-          ...job,
+          jobId: job.jobId,
+          remarks: job.remarks,
           tranNo: index + 1,
         }));
         selectedJobTypesByDocCode[newReception.docCode] = jobsWithTranNo;
@@ -80,11 +81,12 @@ export const updateServiceReception = (docCode: string, data: Partial<ServiceRec
       const index = serviceReceptions.findIndex(r => r.docCode === docCode);
       if (index !== -1) {
         const { jobTypes: jobTypesFromForm, ...restOfData } = data;
-        serviceReceptions[index] = { ...serviceReceptions[index], ...restOfData };
+        serviceReceptions[index] = { ...serviceReceptions[index], ...restOfData as ServiceReception };
 
         if (jobTypesFromForm) {
           const jobsWithTranNo: SelectedJobType[] = jobTypesFromForm.map((job, index) => ({
-            ...job,
+            jobId: job.jobId,
+            remarks: job.remarks,
             tranNo: index + 1,
           }));
           selectedJobTypesByDocCode[docCode] = jobsWithTranNo;
